@@ -4,4 +4,8 @@
 .env
 CLAUDE.md
 AGENTS.md
+
+# Python generated files
+__pycache__/
+*.py[cod]
 /article

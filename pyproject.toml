@@ -3,6 +3,13 @@ name = "KE01d"
 version = "0.0.1"
 dependencies = [
     "dvc>=3.67.1",
+    "geopandas>=1.1.4",
+    "matplotlib>=3.11.1",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.5",
+    "pyarrow>=25.0.0",
+    "scipy>=1.18.0",
+    "seaborn>=0.13.2",
 ]
 
 authors = [
