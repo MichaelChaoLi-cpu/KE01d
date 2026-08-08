@@ -82,10 +82,25 @@ def main() -> None:
     check(int(unique_mesh["Total Population"].sum()) == 1_738_301 and int(unique_mesh["Total Households"].sum()) == 719_154, "mesh_totals_preserved", {}, checks, failures)
     identity = (mesh["Estimated Water Demand (L/day)"] - mesh["Estimated Outage Population"] * mesh["Per Capita Water Demand (L/person/day)"]).abs()
     check(bool(identity.dropna().le(1e-8).all()), "mesh_demand_identity", {"max_error": float(identity.max(skipna=True))}, checks, failures)
-    no_report = mesh["Outage Observation Status"].eq("not_reported")
-    check(bool(mesh.loc[no_report, "Estimated Outage Population"].isna().all() and mesh.loc[no_report, "Estimated Water Demand (L/day)"].isna().all()), "unreported_remains_missing", {"rows": int(no_report.sum())}, checks, failures)
+    unmatched = mesh["Outage Observation Status"].eq("unmatched_geography")
+    check(bool(mesh.loc[unmatched, "Estimated Outage Population"].isna().all() and mesh.loc[unmatched, "Estimated Water Demand (L/day)"].isna().all()), "unmatched_geography_remains_missing", {"rows": int(unmatched.sum())}, checks, failures)
+    assumed_zero = mesh["Outage Observation Status"].eq("assumed_zero_no_official_outage_listing")
+    check(bool(mesh.loc[assumed_zero, "Current Outage Households"].eq(0).all() and mesh.loc[assumed_zero, "Estimated Water Demand (L/day)"].eq(0).all()), "official_listing_absence_is_assumed_zero", {"rows": int(assumed_zero.sum())}, checks, failures)
     reported_zero = mesh["Outage Observation Status"].eq("reported_zero")
     check(bool(mesh.loc[reported_zero, "Estimated Water Demand (L/day)"].eq(0).all()), "reported_zero_is_zero", {"rows": int(reported_zero.sum())}, checks, failures)
+    current_positive_municipalities = set(
+        unique_mesh.loc[
+            unique_mesh["Outage Observation Status"].eq("reported_positive"),
+            "Reporting Municipality Name",
+        ].dropna()
+    )
+    check(
+        current_positive_municipalities == {"八代市", "宇城市", "氷川町"},
+        "latest_positive_outage_municipalities",
+        {"municipalities": sorted(current_positive_municipalities)},
+        checks,
+        failures,
+    )
 
     municipal = pd.read_parquet(ROOT / "data/processed/municipality_outage_demand_scenarios_preprocessed.parquet")
     pivot = municipal[municipal["Demand Scenario"].eq("minimum")].pivot_table(
@@ -101,14 +116,14 @@ def main() -> None:
 
     water = pd.read_parquet(ROOT / "data/processed/emergency_water_points_network_access_preprocessed.parquet")
     water_location = water["Location Resolution Status"].value_counts().to_dict()
-    check(water_location == {"unmatched": 19, "matched_exact_2012_facility": 10, "matched_exact_candidate_unique_geometry": 7}, "water_point_location_status", water_location, checks, failures)
-    check(int(water["Network Snap Accepted"].fillna(False).sum()) == 17 and bool(water.loc[water["Network Snap Accepted"].fillna(False), "Network Snap Distance (m)"].le(250).all()), "water_point_network_threshold", {}, checks, failures)
+    check(water_location == {"matched_announcement_linked_map_coordinate": 19, "matched_exact_2012_facility": 10, "matched_exact_candidate_unique_geometry": 7}, "water_point_location_status", water_location, checks, failures)
+    check(int(water["Network Snap Accepted"].fillna(False).sum()) == 36 and bool(water.loc[water["Network Snap Accepted"].fillna(False), "Network Snap Distance (m)"].le(250).all()), "water_point_network_threshold", {}, checks, failures)
 
     shelter = pd.read_parquet(ROOT / "data/processed/shelter_water_demand_network_access_preprocessed.parquet")
     unique_shelter = shelter.drop_duplicates("Shelter Number")
     shelter_location = unique_shelter["Location Resolution Status"].value_counts().to_dict()
-    check(shelter_location == {"unmatched": 24, "matched_exact_2012_facility": 12, "matched_exact_candidate_unique_geometry": 5}, "shelter_location_status", shelter_location, checks, failures)
-    check(int(unique_shelter["Network Snap Accepted"].fillna(False).sum()) == 17 and bool(unique_shelter.loc[unique_shelter["Network Snap Accepted"].fillna(False), "Network Snap Distance (m)"].le(250).all()), "shelter_network_threshold", {}, checks, failures)
+    check(shelter_location == {"matched_exact_2012_facility": 12, "matched_current_emergency_evacuation_site_exact": 14, "matched_current_designated_shelter_exact": 10, "matched_exact_candidate_unique_geometry": 5}, "shelter_location_status", shelter_location, checks, failures)
+    check(int(unique_shelter["Network Snap Accepted"].fillna(False).sum()) == 41 and bool(unique_shelter.loc[unique_shelter["Network Snap Accepted"].fillna(False), "Network Snap Distance (m)"].le(250).all()), "shelter_network_threshold", {}, checks, failures)
     shelter_identity = (shelter["Estimated Shelter Water Demand (L/day)"] - shelter["Evacuee People"] * shelter["Per Capita Water Demand (L/person/day)"]).abs()
     check(bool(shelter_identity.le(1e-8).all() and shelter["Shelter Demand Accounting Status"].eq("separate_not_added_to_resident_demand").all()), "shelter_demand_separate", {}, checks, failures)
 

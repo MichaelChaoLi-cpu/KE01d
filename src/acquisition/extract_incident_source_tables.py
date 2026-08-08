@@ -284,7 +284,9 @@ def parse_outage_rows(text: str) -> list[dict[str, Any]]:
     water_start = text.find("■水道")
     if water_start < 0:
         return []
-    water_end = text.find("■下水道", water_start)
+    water_end = text.find("○給水車の派遣状況", water_start)
+    if water_end < 0:
+        water_end = text.find("■下水道", water_start)
     section = text[water_start : water_end if water_end >= 0 else None]
     rows: list[dict[str, Any]] = []
     for municipality in MUNICIPALITIES:
@@ -365,7 +367,7 @@ def parse_tanker_rows(text: str) -> dict[str, dict[str, Any]]:
 
 def extract_outage_tanker_snapshots(manifest: dict[str, dict[str, str]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for report_number in range(1, 34):
+    for report_number in range(1, 35):
         source_id = f"mlit_report_{report_number:02d}"
         source = manifest[source_id]
         text = pdf_text(ROOT / source["relative_path"])

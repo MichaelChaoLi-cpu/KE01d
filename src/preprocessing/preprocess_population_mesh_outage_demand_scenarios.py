@@ -28,24 +28,37 @@ mapped = mapped[
     & mapped["Reporting Municipality Code"].notna()
     & mapped["Municipality Match Status"].eq("exact_official_name")
 ]
-latest = mapped.sort_values(["Water Status Timestamp", "Report Number"]).groupby(
+latest_official_snapshot = mapped["Water Status Timestamp"].max()
+current_snapshot = mapped[mapped["Water Status Timestamp"].eq(latest_official_snapshot)]
+latest = current_snapshot.sort_values(["Water Status Timestamp", "Report Number"]).groupby(
     "Reporting Municipality Code", observed=True
 ).tail(1)
 latest = latest[["Reporting Municipality Code", "Water Status Timestamp", "Current Outage Households"]].rename(
     columns={"Water Status Timestamp": "Outage Snapshot Time"}
 )
 base = links.merge(latest, on="Reporting Municipality Code", how="left")
+assumed_zero = (
+    base["Reporting Municipality Code"].notna()
+    & base["Current Outage Households"].isna()
+)
+# The latest MLIT water table is an exhaustive list of municipalities with
+# reported outage households. Following the approved main-scenario rule,
+# in-scope municipalities absent from that list are coded as zero current
+# outage households while retaining a distinct evidence status.
+base.loc[assumed_zero, "Current Outage Households"] = 0
+base.loc[assumed_zero, "Outage Snapshot Time"] = latest_official_snapshot
 base["Municipality Total Households"] = base.groupby("Reporting Municipality Code", dropna=False)["Total Households"].transform("sum").astype("Int64")
 base["Municipality Household Share"] = (
     base["Total Households"] / base["Municipality Total Households"]
 ).astype("Float64")
 
-reported = base["Current Outage Households"].notna()
+reported = base["Current Outage Households"].notna() & ~assumed_zero
 zero = reported & base["Current Outage Households"].eq(0)
 raw_ratio = base["Current Outage Households"] / base["Municipality Total Households"]
 capped = reported & raw_ratio.gt(1)
 base["Outage Household Ratio"] = raw_ratio.clip(lower=0, upper=1).astype("Float64")
-base["Outage Observation Status"] = pd.Series("not_reported", index=base.index, dtype="string")
+base["Outage Observation Status"] = pd.Series("unmatched_geography", index=base.index, dtype="string")
+base.loc[assumed_zero, "Outage Observation Status"] = "assumed_zero_no_official_outage_listing"
 base.loc[zero, "Outage Observation Status"] = "reported_zero"
 base.loc[reported & ~zero, "Outage Observation Status"] = "reported_positive"
 base.loc[capped, "Outage Observation Status"] = "reported_positive_ratio_capped"

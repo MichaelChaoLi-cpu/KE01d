@@ -36,7 +36,9 @@ mapped = outages.merge(
     on=["Reporting Unit Type", "Reporting Unit"], how="left",
 )
 mapped = mapped[mapped["Municipality Match Status"].eq("exact_official_name")]
-latest = mapped.sort_values(["Water Status Timestamp", "Report Number"]).groupby(
+latest_official_snapshot = mapped["Water Status Timestamp"].max()
+current_snapshot = mapped[mapped["Water Status Timestamp"].eq(latest_official_snapshot)]
+latest = current_snapshot.sort_values(["Water Status Timestamp", "Report Number"]).groupby(
     "Reporting Municipality Code", observed=True
 ).tail(1)
 latest = latest[["Reporting Municipality Code", "Report Number", "Water Status Timestamp", "Maximum Outage Households", "Tanker Total", "MLIT Tankers", "JWWA Tankers", "SDF Tankers"]]
