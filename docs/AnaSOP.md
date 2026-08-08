@@ -321,9 +321,9 @@ decision record rather than treated as final analytical variables.
 | Allocation Limit (L) | Water Allocation Limit in Liters | supply constraint | \(q_j^{limit}\), the announced maximum liters distributed per allocation unit at point \(j\). | Parsed as numeric liters; missing values are not imputed. | yes |
 | Water Type | Distributed Water Type | supply context | Reported type or intended use of distributed water. | Trimmed source label; encoded as a category. | yes |
 | Source Status Time | Water Point Status Timestamp | time | Timestamp at which the announced water-point status applies. | Parsed and normalized to Asia/Tokyo. | yes |
-| Latitude | Facility Latitude | geography | Geographic latitude in decimal degrees. | Filled only by a unique municipality-consistent normalized-name match; otherwise missing. | yes |
-| Longitude | Facility Longitude | geography | Geographic longitude in decimal degrees. | Filled only by a unique municipality-consistent normalized-name match; otherwise missing. | yes |
-| Location Resolution Status | Facility Location Resolution Status | quality | Indicates whether coordinates were resolved by the accepted deterministic linkage rule. | `matched_exact_2012_facility` or `unmatched`; no fuzzy matches accepted. | yes |
+| Latitude | Facility Latitude | geography | Geographic latitude in decimal degrees. | Retained from an accepted event coordinate or filled by the documented municipality-specific exact-match source hierarchy; otherwise missing. | yes |
+| Longitude | Facility Longitude | geography | Geographic longitude in decimal degrees. | Retained from an accepted event coordinate or filled by the documented municipality-specific exact-match source hierarchy; otherwise missing. | yes |
+| Location Resolution Status | Facility Location Resolution Status | quality | Indicates whether coordinates were resolved by the accepted deterministic linkage rule. | Distinguishes accepted event coordinates, exact historical matches, unique exact candidate matches, current official designated-shelter matches, current official emergency-evacuation-site matches, announcement-linked support-map matches, and unresolved records; no fuzzy matches are accepted. | yes |
 | Shelter Number | Shelter Sequence Number | identifier | Official sequence number within the shelter status list. | Parsed as a nullable integer. | yes |
 | Shelter Name | Shelter Facility Name | identifier | Named public shelter facility. | Trimmed official facility label. | yes |
 | District | Shelter District | geography | Local district associated with a shelter. | Trimmed source label; encoded as a category. | yes |
@@ -513,8 +513,12 @@ decision record rather than treated as final analytical variables.
   where \(s_m^{90}\) is the household-count-weighted 90th percentile of persons per
   household among meshes in municipality \(m\). These are planning sensitivity bounds, not
   confidence intervals or household-level confirmations.
-- Reported zero outage households generate zero affected population. An absent outage report
-  remains missing. Ratios above one are capped at one and explicitly flagged. Maximum reported
+- Reported zero outage households generate zero affected population. For the main current-status
+  scenario, an in-scope municipality absent from the latest exhaustive MLIT outage-household
+  listing is assigned zero current outage households and labeled
+  `assumed_zero_no_official_outage_listing`; this is an evidence-qualified research assumption,
+  not an explicit municipal zero report. Meshes that cannot be linked to a reporting municipality
+  remain missing. Ratios above one are capped at one and explicitly flagged. Maximum reported
   outage households remain a historical peak measure rather than an upper bound for the current
   snapshot.
 - For \(q\in\{3,10,20\}\) liters per person per day, resident demand is
@@ -525,9 +529,16 @@ decision record rather than treated as final analytical variables.
   automatically added to resident demand, preventing unverified double counting.
 - Facility coordinates follow a strict hierarchy: an already accepted event coordinate, an
   exact historical-facility match, or a normalized exact candidate match only when all matching
-  records share one geometry. No fuzzy matching is used. Seventeen of 36 water points and 17 of
-  41 shelters are resolved; all 34 resolved facilities have an accepted road-node snap within
-  250 m. Unresolved facilities remain in the outputs with missing network fields.
+  records share one geometry. No fuzzy matching is used. For the 19 water points that failed
+  this conservative rule, facility identities were checked against official municipal facility
+  and address records, and coordinates were recovered from the public support-map data linked
+  by the 8 August 2026 Yatsushiro City water-point announcement. For the remaining shelters,
+  municipality-specific normalized exact names are linked first to the current official
+  designated-shelter layer and then, only if still unresolved, to the current official emergency-
+  evacuation-site layer. This shelter hierarchy adds 10 and 14 coordinates, respectively. The
+  MLIT P20 shelter layer is retained only as a historical corroboration source and does not
+  override a current official coordinate. All 36 water points and all 41 shelters are resolved;
+  all 77 facilities have an accepted road-node snap within 250 m.
 - All 680 road-restriction observations are retained. Line restrictions match every edge within
   50 m; point restrictions match the nearest edge within 100 m; a nearest-edge fallback within
   250 m is allowed when the primary rule finds no edge. Route-name agreement is auxiliary only.
@@ -549,10 +560,10 @@ decision record rather than treated as final analytical variables.
 | Joint Operator Area Status | Joint-Operator Area Status | quality | Whether a reporting unit represents a multi-municipality operator. | Boolean; joint operators are retained without unsupported allocation. | yes |
 | Constituent Administrative Unit Count | Constituent Administrative Unit Count | geography | Number of source administrative units dissolved into a reporting municipality. | Equals five for Kumamoto City and one for other reporting municipalities. | yes |
 | Kumamoto City Ward Dissolved | Kumamoto City Ward-Dissolve Indicator | geography | Whether the reporting polygon combines Kumamoto City wards. | Boolean assigned during creation of the 45-municipality layer. | yes |
-| Outage Observation Status | Outage Observation Status | quality | Availability and interpretation of the outage observation for a municipality. | Distinguishes reported positive, reported zero, absent report, and unmatched geography. | yes |
+| Outage Observation Status | Outage Observation Status | quality | Availability and interpretation of the outage observation for a municipality. | Distinguishes reported positive, reported zero, assumed zero due to absence from the exhaustive official outage listing, and unmatched geography. | yes |
 | Municipality Total Population | Municipality Total Resident Population | demand denominator | \(N_m=\sum_{g\in m}N_g\), resident population assigned to municipality \(m\). | Summed from linked 125 m meshes; unmatched meshes remain separate audit rows. | yes |
 | Municipality Total Households | Municipality Total Household Count | demand denominator | \(H_m=\sum_{g\in m}H_g\), households assigned to municipality \(m\). | Summed from linked 125 m meshes; missing values are not imputed. | yes |
-| Outage Household Ratio | Reported Outage Household Ratio | demand | \(r_m=\min(1,H_m^{out}/H_m)\) when inputs are valid. | Values above one are capped and flagged; absent reports remain missing. | yes |
+| Outage Household Ratio | Current Outage Household Ratio | demand | \(r_m=\min(1,H_m^{out}/H_m)\) when inputs are valid. | Values above one are capped and flagged; municipalities absent from the exhaustive official outage listing receive an assumed ratio of zero, while unmatched geography remains missing. | yes |
 | Outage Population Scenario | Affected-Population Scenario | scenario | Scenario label identifying lower, central, or upper affected population. | Encoded as an ordered categorical sensitivity level. | yes |
 | Estimated Outage Population | Estimated Population Affected by Outage | demand | \(N_g^{scenario}\), affected residents under the selected planning bound. | Constructed using the documented lower, central, and upper formulas. | yes |
 | Demand Scenario | Per-Capita Water-Demand Scenario | scenario | Scenario label for minimum, basic, or extended daily water demand. | Maps to 3, 10, or 20 L/person/day. | yes |
@@ -560,10 +571,10 @@ decision record rather than treated as final analytical variables.
 | Estimated Water Demand (L/day) | Estimated Resident Emergency Water Demand | outcome | \(D_{g,q}=N_g^{scenario}q\), liters per day required by a mesh. | Computed for every estimable population and demand scenario pair. | yes |
 | Spatial Join Status | Population-Mesh Spatial Join Status | quality | Method and success state of mesh-to-municipality linkage. | Unique point match, maximum-overlap match, or unmatched. | yes |
 | Municipality Household Share | Mesh Share of Municipality Households | allocation weight | \(H_g/H_m\) when the denominator is valid. | Used to allocate reported outage households to meshes. | yes |
-| Outage Snapshot Time | Outage Observation Snapshot Timestamp | time | Timestamp represented by the selected outage report. | Parsed and normalized to Asia/Tokyo; absent observations remain missing. | yes |
-| Location Resolution Source | Facility Location Resolution Source | provenance | Evidence source used to assign a facility geometry. | Accepted event coordinate, exact historical match, unique normalized exact match, or unresolved. | yes |
+| Outage Snapshot Time | Outage Observation Snapshot Timestamp | time | Timestamp represented by the selected outage report or exhaustive official listing. | Parsed and normalized to Asia/Tokyo; assumed-zero municipalities use the latest exhaustive-listing timestamp and unmatched geography remains missing. | yes |
+| Location Resolution Source | Facility Location Resolution Source | provenance | Evidence source used to assign a facility geometry. | Accepted event coordinate, exact historical match, unique normalized exact match, current official designated-shelter exact match, current official emergency-evacuation-site exact match, announcement-linked support-map coordinate with provider, or unresolved. | yes |
 | Location Match Candidate Record Count | Facility Location Candidate Record Count | quality | Number of candidate records returned by deterministic name matching. | Retained as a nullable integer for ambiguity auditing. | yes |
-| Location Match Candidate Geometry Count | Facility Location Candidate Geometry Count | quality | Number of unique geometries among deterministic location candidates. | A new match is accepted only when this count equals one. | yes |
+| Location Match Candidate Geometry Count | Facility Location Candidate Geometry Count | quality | Number of unique geometries among deterministic location candidates. | A staging-candidate match is accepted only when this count equals one; announcement-linked coordinate overrides retain the count for ambiguity auditing. | yes |
 | Water Point Node ID | Emergency Water-Point Road Network Node Identifier | network linkage | Road node assigned to an emergency water point. | Retained only for an accepted snap within 250 m. | yes |
 | Shelter Node ID | Shelter Road Network Node Identifier | network linkage | Road node assigned to a public shelter. | Retained only for an accepted snap within 250 m. | yes |
 | Estimated Shelter Water Demand (L/day) | Estimated Shelter Emergency Water Demand | demand | \(D_{j,q}^{shelter}=N_j^{evac}q\), shelter demand in liters per day. | Computed separately for 3, 10, and 20 L/person/day when evacuee count is observed. | yes |
@@ -617,10 +628,11 @@ and water-point failures.
 
 The primary planning scenario uses the central Outage Population Scenario, minimum Demand
 Scenario of 3 L/person/day, 3-day Outage Duration, 3,000 L Tanker Capacity, five Daily Trip
-Limit, 30-minute Loading Time and Unloading Time, 10-hour Daily Work Limit, 500 m General
-Access Distance, 250 m Older Resident Access Distance, fleet size of 10, baseline Road State,
-and reported-schedule Water Point State. These are reference settings, not observed 2026
-operational facts.
+Limit, 30-minute Loading Time and Unloading Time, 10-hour Daily Work Limit, 250 m Older
+Resident Access Distance, fleet size of 10, baseline Road State, and reported-schedule Water
+Point State. General Access Distance is not assigned a single primary or reference value:
+250, 500, and 1,000 m remain co-equal sensitivity scenarios. All operational settings are
+planning assumptions, not observed 2026 operational facts.
 
 Resident demand and shelter demand remain separate analytical ledgers. Shelter demand is
 never automatically added to resident demand. The resident ledger answers population-wide
@@ -629,10 +641,11 @@ Evacuee People and prioritizes shelters with unavailable or partially available 
 No combined total is presented without an explicit deduplication rule.
 
 Comparisons vary lower, central, and upper outage population; 3, 10, and 20 L/person/day;
-1, 3, and 7 days; fleets of 5, 10, and 20 vehicles; three road states; and reported-schedule
-versus worst single-point-failure states. Vehicle capacity, trip, service-time, and work-hour
-assumptions are varied one factor at a time around the primary setting unless a planned output
-explicitly reports their interaction.
+1, 3, and 7 days; fleets of 5, 10, and 20 vehicles; General Access Distance of 250, 500, and
+1,000 m; three road states; and reported-schedule versus worst single-point-failure states.
+Vehicle capacity, trip, service-time, and work-hour assumptions are varied one factor at a time
+around the other operational settings unless a planned output explicitly reports their
+interaction.
 
 ### Eligibility, Baselines, and Interpretation
 
@@ -737,6 +750,21 @@ evacuees; \(\mathcal{U}_x\) is the corresponding set of analysis units;
 covered share. Every denominator, unresolved count, rejected snap, and disconnected unit is
 reported.
 
+The alternative-access-distance map additionally evaluates the extended resident
+access-distance sensitivity set for the 36 existing announced water points
+
+\[
+\mathcal{A}^{extended}=\{250,500,1000,2000,5000\}\ \mathrm{m}.
+\]
+
+Here, \(\mathcal{A}^{extended}\) is the newly defined set of resident access thresholds.
+The 250, 500, and 1,000 m values retain the prespecified co-equal General Access Distance
+scenarios; 2,000 and 5,000 m are researcher-defined diagnostic extensions used to reveal how
+coverage changes as the assumed collection range widens. None is a reference distance or an
+observation of actual walking behavior. The announced-point inventory, road state, resident
+denominator, and network-distance calculation remain fixed at every value of \(a\), so the
+comparison isolates the threshold assumption.
+
 The resolved-point estimate is the conservative location-evidence result. An explicitly
 optimistic upper bound additionally treats uncovered demand in a municipality containing an
 unresolved announced point as potentially coverable, without assigning a distance. This bound
@@ -800,15 +828,22 @@ of tankers. A route with zero feasible trips is infeasible. Allocation Limit (L)
 but is not interpreted as daily point throughput. Maximum Daily Supply (m3/day) is applied
 only in a separately labeled historical upper-bound sensitivity.
 
-### Constrained Allocation
+### Constrained Multi-Site Trip Allocation
 
-The resident and shelter ledgers are solved separately with the same network and vehicle
-logic. For a demand unit \(u\), let \(D_u\) be ledger-specific demand,
+The resident and shelter ledgers are solved separately with the same network and pooled-fleet
+logic. A tanker may replenish more than one distribution point during the day, provided that
+its refill-pool trip and work-time budgets are respected. This replaces the overly restrictive
+assumption that one tanker remains assigned to one distribution point for the full day.
+
+For a demand unit \(u\), let \(D_u\) be ledger-specific demand,
 \(x_{uj}\) delivered water from point \(j\), \(U_u\) unmet demand,
 \(y_{uj}\) a binary assignment indicator, \(z_j\) a binary point-selection indicator,
-\(v_{bfj}\) the integer tankers assigned to route \((b,f,j)\), and \(F\) Fleet Size.
-Only arcs meeting the relevant access threshold and road or point state are created. The core
-constraints are
+\(k_{fj}\) the integer refill-delivery trips from historical refill candidate \(f\) to
+point \(j\), \(v_f\) the integer tanker equivalents allocated to refill pool \(f\),
+and \(F\) Fleet Size. For computational transparency, each point retains its three feasible
+refill routes with the lowest effective trip time; this route screening changes logistics
+options but never resident access arcs. Only demand-to-point arcs meeting the relevant access
+threshold and road or point state are created. The core constraints are
 
 \[
 \sum_j x_{uj}+U_u=D_u,
@@ -827,35 +862,56 @@ y_{uj}\leq z_j,
 \]
 
 \[
-\sum_u x_{uj}\leq\sum_b\sum_f cK_{bfj}v_{bfj},
+\sum_u x_{uj}\leq c\sum_f k_{fj},
+\]
+
+\[
+\sum_j k_{fj}\leq K^{limit}v_f,
+\]
+
+\[
+\sum_j \tau_{fj}k_{fj}+2t_{b^*f}v_f\leq 60Wv_f,
 \]
 
 and
 
 \[
-\sum_b\sum_f\sum_j v_{bfj}\leq F.
+\sum_f v_f\leq F.
 \]
+
+Here, \(k_{fj}\) allows the same refill-pool fleet to serve several points during one day;
+\(\tau_{fj}=2t_{fj}+t^{load}+t^{unload}\) is the minutes consumed by one refill-delivery
+cycle; and \(b^*\) is the nearest eligible dispatch base for refill candidate \(f\).
+The refill-pool formulation is an aggregate daily plan rather than a turn-by-turn vehicle
+schedule. It must therefore be interpreted as a feasible fleet-equivalent allocation under
+the stated budgets, not as an observed or dispatch-ready route manifest.
 
 The resident model uses the lexicographic objective
 
 \[
 \operatorname{lexmin}\left(
-U^{resident},B^{older},B^{resident},T^{tanker},Z^{temporary}
+U^{resident},V^{used},K^{trips},Z^{temporary},
+B^{older},B^{resident},T^{tanker}
 \right).
 \]
 
 Here, \(U^{resident}\) is total unmet resident minimum demand; \(B^{older}\) is
 network-distance burden for Population Age 65+ at disclosure-group support;
 \(B^{resident}\) is affected-resident network-distance burden; \(T^{tanker}\) is total
-tanker travel and service time; and \(Z^{temporary}\) is the number of selected temporary
-points. Including \(B^{older}\) gives older residents access priority without adding their
-population again as water demand.
+tanker travel and service time; \(V^{used}=\sum_fv_f\) is the minimum fleet-equivalent count
+needed within the available fleet; \(K^{trips}=\sum_f\sum_jk_{fj}\) is the planned daily
+refill-delivery trip count; and \(Z^{temporary}\) is the number of selected temporary points.
+The ordering first maximizes protected demand, then prevents unused nominal fleet from being
+reported as deployed, and only then refines spatial and route burden. Including
+\(B^{older}\) gives older residents access priority without adding their population again as
+water demand.
 
 The shelter model uses
 
 \[
 \operatorname{lexmin}\left(
-U^{water-unavailable},U^{shelter},T^{tanker},Z^{temporary}
+U^{water-unavailable},U^{shelter},V^{used},K^{trips},
+Z^{temporary},T^{tanker}
 \right).
 \]
 
@@ -934,29 +990,30 @@ Support status is assigned only after the generated evidence passes the stated c
 | Audit reporting and spatial linkage | Municipality Match Status, Spatial Join Status, Location Resolution Status, Location Resolution Source, Network Snap Accepted, Road Edge Match Status, Road Edge Match Candidate Count | Coverage counts and explicit unmatched denominators | Data Linkage and Coverage Audit | Tests whether outage, population, facility, and road evidence can be linked without silent record loss. | inconclusive until generated |
 | Construct resident and shelter demand | Estimated Outage Population, Outage Population Scenario, Per Capita Water Demand (L/person/day), Demand Scenario, Estimated Water Demand (L/day), Evacuee People, Estimated Shelter Water Demand (L/day), Shelter Demand Accounting Status | Daily mesh, shelter, municipal, and cumulative demand equations | Outage Population and Emergency Water Demand; Municipality Outage Population and Water Demand | Evaluates RQ2 and the demand component of the central question. Bounds must remain ordered, municipality totals must reconcile, and shelter demand must remain separate. | inconclusive until generated |
 | Document scenario evidence | Parameter Name, Scenario Level, Parameter Value, Parameter Unit, Evidence Class, Evidence Source, Parameter Notes, Historical Capacity Only | Primary-scenario declaration and one-factor sensitivity design | Scenario Parameters and Evidence | Tests whether observed evidence, official references, and researcher-defined assumptions are distinguishable and auditable. | inconclusive until generated |
-| Estimate nominal access | Demand Node ID, Water Point Node ID, Shelter Node ID, Population Age 65+, Evacuee People, Road Length (m), Network Snap Accepted, Location Resolution Status | Shortest network-distance and weighted coverage equations under road and point states | Announced Water Points and Nominal Access Coverage; Accessibility Coverage by Distance Threshold; Municipality Accessibility and Priority Gaps | Evaluates RQ3. Results must report unresolved and disconnected shares and must be labeled as a road-network proxy rather than observed walking behavior. | inconclusive until generated |
+| Estimate nominal access | Estimated Outage Population, Demand Node ID, Water Point Node ID, Shelter Node ID, Population Age 65+, Evacuee People, Road Length (m), Network Snap Accepted, Location Resolution Status, Parameter Name, Parameter Value | Shortest network-distance, weighted coverage equations, and extended 250-5,000 m existing-point sensitivity under the baseline road state | Announced Water Points and Nominal Access Coverage; Accessibility Coverage by Distance Threshold; Announced Water-Point Coverage under Alternative Access Distances; Municipality Accessibility and Priority Gaps | Evaluates RQ3. Results must report unresolved and disconnected shares and must be labeled as a road-network proxy rather than observed walking behavior. | inconclusive until generated |
 | Calculate tanker workload | Estimated Water Demand (L/day), Estimated Shelter Water Demand (L/day), Dispatch Base Node ID, Water Point Node ID, Baseline Edge Travel Time (min), Parameter Name, Scenario Level, Parameter Value, Maximum Daily Supply (m3/day), Historical Capacity Only | Feasible-trip, deliverable-volume, and required-tanker equations | Required Water Volume and Tanker Workload; Water-Point Capacity and Tanker Requirements | Evaluates RQ4. Volume and fleet results must be described as required capacity under assumptions, not actual supply gaps or realized trips. | inconclusive until generated |
-| Solve resident and shelter allocation ledgers | Candidate Staging Site ID, Candidate Staging Site Name, Screened Staging Candidate, Candidate Network Eligible, Staging Demand Node ID, Candidate Dispatch Base, Dispatch Base Node ID, Water Treatment Facility Name, Matched Road Edge ID, Road Edge Match Status, Estimated Water Demand (L/day), Estimated Shelter Water Demand (L/day) | Demand-balance, access, vehicle-capacity, fleet, and lexicographic allocation model | Scenario-Based Tanker and Temporary Water-Point Allocation; Scenario-Based Priority Deployment List | Evaluates RQ1 and the placement component of RQ5. Solutions must be feasible, improve or explain failure to improve transparent baselines, and keep the two demand ledgers separate. | inconclusive until generated |
-| Measure marginal returns and robustness | Estimated Outage Population, Estimated Water Demand (L/day), Demand Scenario, Parameter Name, Scenario Level, Parameter Value, Road Edge Match Status, Water Point Node ID | Protected share, total unmet water, marginal gain, deployment stability, and 162-scenario factorial comparison | Marginal Protection Gains from Additional Tankers; Scenario Performance and Robustness | Evaluates the resource-curve and robustness components of RQ5. Unstable sites or small marginal gains weaken a single preferred deployment claim. | inconclusive until generated |
+| Solve resident and shelter allocation ledgers | Candidate Staging Site ID, Candidate Staging Site Name, Screened Staging Candidate, Candidate Network Eligible, Staging Demand Node ID, Candidate Dispatch Base, Dispatch Base Node ID, Water Treatment Facility Name, Matched Road Edge ID, Road Edge Match Status, Estimated Water Demand (L/day), Estimated Shelter Water Demand (L/day) | Demand-balance, access, pooled multi-site refill-trip, work-time, fleet-equivalent, and lexicographic allocation model | Scenario-Based Tanker and Temporary Water-Point Allocation; Scenario-Based Priority Deployment List | Evaluates RQ1 and the placement component of RQ5. Solutions must distinguish the access ceiling from the fleet-capacity gap, permit a refill-pool fleet to serve multiple points, improve or explain failure to improve transparent baselines, and keep the two demand ledgers separate. | inconclusive until generated |
+| Measure marginal returns and robustness | Estimated Outage Population, Estimated Water Demand (L/day), Demand Scenario, Parameter Name, Scenario Level, Parameter Value, Road Edge Match Status, Water Point Node ID | Protected share, total unmet water, tanker marginal gain, deployment stability, and 162-scenario factorial comparison | Marginal Protection Gains from Additional Tankers; Scenario Performance and Robustness | Evaluates the resource-curve and robustness components of RQ5. Unstable sites or small tanker marginal gains weaken a single preferred deployment claim. | inconclusive until generated |
 | Synthesize the closed planning chain | All variables and models above | Cross-output reconciliation of demand, access, required capacity, allocation, and remaining gap | All planned figures and tables | Evaluates the central research question. The conclusion is partially supported only if outputs reconcile and remain stable enough for scenario planning; otherwise it is inconclusive or weakened. | inconclusive until generated |
 
 ### Evidence Checkpoints
 
 - Demand passes when lower, central, and upper Estimated Outage Population remain ordered,
-  municipal aggregation is internally consistent, and all missing outage observations remain
-  distinguishable from reported zeros.
+  municipal aggregation is internally consistent, and reported zeros, assumed zeros from the
+  exhaustive official listing, and unmatched geography remain distinguishable.
 - Access passes when coverage denominators, unresolved Water Point Name records, unresolved
   Shelter Name records, rejected Network Snap Accepted records, and disconnected routes are
-  reported for every population class and threshold.
+  reported for every population class and threshold. Existing-point coverage must be
+  nondecreasing across \(\mathcal{A}^{extended}\).
 - Workload passes when assigned demand equals delivered plus unmet water, tanker trips satisfy
   service-time and Daily Work Limit assumptions, and historical capacity is never labeled current.
-- Allocation passes when every selected route satisfies access, road-state, point-state, trip,
-  and Fleet Size constraints and when results are compared with nearest-point and proportional
+- Allocation passes when every selected route satisfies access, road-state, point-state,
+  refill-pool trip, work-time, and Fleet Size constraints; the access ceiling and fleet-capacity
+  gap are separately reported; and results are compared with nearest-point and proportional
   allocation baselines.
 - Robustness passes for scenario planning only if the direction of resource gains is stable and
   priority locations do not change drastically under small assumption changes. Failure does not
   invalidate the data; it limits the result to a scenario range rather than a single deployment.
-
 ## 8. Figure and Table Plan
 
 The planned outputs follow the demand-access-capacity-allocation-gap chain. Outputs that
@@ -968,18 +1025,19 @@ demand remain scenario results whose definitions and constraints must be specifi
 
 | title | what it expresses | figure type | subpanels | key variables | status |
 |---|---|---|---:|---|---|
-| Outage Population and Emergency Water Demand | Maps affected-population estimates and emergency-water demand at mesh and municipality support under the lower, central, and upper planning bounds, addressing the demand component of the research objective. | map | 3 | Reporting Municipality Name, Geometry, Estimated Outage Population, Estimated Water Demand (L/day), Outage Population Scenario, Demand Scenario | pending |
-| Announced Water Points and Nominal Access Coverage | Maps resolved announced water points, affected demand, and nominal network coverage while explicitly representing unresolved-location sensitivity. | map | 3 | Water Point Name, Water Point Node ID, Location Resolution Status, Demand Node ID, Estimated Outage Population, Network Snap Accepted, Parameter Name, Parameter Value | pending |
-| Accessibility Coverage by Distance Threshold | Compares cumulative coverage of affected residents, older residents, and shelter evacuees across the approved access-distance thresholds. | line | 3 | Estimated Outage Population, Population Age 65+, Evacuee People, Demand Node ID, Water Point Node ID, Shelter Node ID, Road Length (m), Parameter Name, Parameter Value | pending |
-| Required Water Volume and Tanker Workload | Compares required daily water volume and tanker workload across demand, vehicle-capacity, trip-count, service-time, and work-hour assumptions. | heatmap | 3 | Estimated Water Demand (L/day), Estimated Shelter Water Demand (L/day), Demand Scenario, Dispatch Base Node ID, Water Point Node ID, Baseline Edge Travel Time (min), Parameter Name, Scenario Level, Parameter Value | pending |
+| Outage Population and Emergency Water Demand | Maps affected-population estimates and emergency-water demand at mesh and municipality support under the lower, central, and upper planning bounds, addressing the demand component of the research objective. | map | 3 | Reporting Municipality Name, Geometry, Estimated Outage Population, Estimated Water Demand (L/day), Outage Population Scenario, Demand Scenario | done |
+| Announced Water Points and Nominal Access Coverage | Maps resolved announced water points, affected demand, and nominal network coverage while explicitly representing unresolved-location sensitivity. | map | 3 | Water Point Name, Water Point Node ID, Location Resolution Status, Demand Node ID, Estimated Outage Population, Network Snap Accepted, Parameter Name, Parameter Value | done |
+| Accessibility Coverage by Distance Threshold | Compares cumulative coverage of affected residents, older residents, and shelter evacuees across the approved access-distance thresholds. | line | 3 | Estimated Outage Population, Population Age 65+, Evacuee People, Demand Node ID, Water Point Node ID, Shelter Node ID, Road Length (m), Parameter Name, Parameter Value | done |
+| Required Water Volume and Tanker Workload | Compares required daily water volume and tanker workload across demand, vehicle-capacity, trip-count, service-time, and work-hour assumptions. | heatmap | 3 | Estimated Water Demand (L/day), Estimated Shelter Water Demand (L/day), Demand Scenario, Dispatch Base Node ID, Water Point Node ID, Baseline Edge Travel Time (min), Parameter Name, Scenario Level, Parameter Value | done |
 | Scenario-Based Tanker and Temporary Water-Point Allocation | Maps tanker bases, historical refill candidates, selected temporary water points, and service areas under baseline, road-disruption, and point-failure scenarios. | map | 3 | Candidate Staging Site ID, Candidate Staging Site Name, Staging Demand Node ID, Dispatch Base Node ID, Water Treatment Facility Name, Matched Road Edge ID, Road Edge Match Status, Estimated Water Demand (L/day), Scenario Level | pending |
 | Marginal Protection Gains from Additional Tankers | Shows the incremental protected-population gain and remaining unmet water requirement as the scenario fleet expands under alternative disruptions. | line | 2 | Estimated Outage Population, Estimated Water Demand (L/day), Demand Scenario, Parameter Name, Scenario Level, Parameter Value, Road Edge Match Status, Water Point Node ID | pending |
+| Announced Water-Point Coverage under Alternative Access Distances | Maps affected resident meshes covered by the 36 existing announced water points under 250, 500, 1,000, 2,000, and 5,000 m baseline road-network distance assumptions. | map | 5 | Reporting Municipality Name, Geometry, Estimated Outage Population, Demand Node ID, Water Point Node ID, Road Length (m), Network Snap Accepted, Parameter Name, Parameter Value | done |
 
 ### Tables
 
 | title | what it expresses | rows | columns | row meaning | column meaning | status |
 |---|---|---:|---:|---|---|---|
-| Data Linkage and Coverage Audit | Summarizes completeness and uncertainty in reporting-unit, mesh, facility, road, and network linkages. | 9 | 7 | One linkage or matching component. | Component, total records, successful records, unmatched records, coverage rate, acceptance rule, and interpretation limit. | pending |
+| Data Linkage and Coverage Audit | Summarizes completeness and uncertainty in reporting-unit, mesh, facility, road, and network linkages. | 9 | 7 | One linkage or matching component. | Component, total records, successful records, unmatched records, coverage rate, acceptance rule, and interpretation limit. | done |
 | Scenario Parameters and Evidence | Documents official-reference and researcher-defined sensitivity assumptions used by the planning scenarios. | 35 | 7 | One parameter scenario level. | Parameter Name, Scenario Level, Parameter Value, Parameter Unit, Evidence Class, Evidence Source, and Parameter Notes. | pending |
 | Municipality Outage Population and Water Demand | Reports outage-population bounds and daily water demand for the 45 municipalities plus the unmatched-mesh audit unit. | 46 | 13 | One reporting municipality or unmatched-mesh audit unit. | Outage observation, reported households, household ratio, lower, central, and upper population estimates, three daily demand levels, snapshot, and linkage status. | pending |
 | Municipality Accessibility and Priority Gaps | Reports nominal access coverage and gaps for affected residents, older residents, and shelter evacuees by municipality. | 45 | 14 | One reporting municipality. | Coverage at 250, 500, and 1,000 m, uncovered affected population, older-population strict-threshold results, shelter coverage, and unresolved-location sensitivity. | pending |
