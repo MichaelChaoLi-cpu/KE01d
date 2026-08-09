@@ -18,10 +18,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib.colors import LogNorm
+from matplotlib.colors import LinearSegmentedColormap, LogNorm
+from matplotlib.patches import Rectangle
 from scipy.sparse import bmat, csr_matrix
 from scipy.sparse.csgraph import dijkstra
 from scipy.spatial import cKDTree
+
+from _figure_style import (
+    BLACK,
+    BLUE,
+    BORDER_GREY,
+    GREEN,
+    LIGHT_GREY,
+    PANEL_FILL,
+    VERMILLION,
+    panel_label,
+    set_theme,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -248,18 +261,12 @@ def best_feasible_trips(
     return best
 
 
-def add_panel_label(ax: plt.Axes, label: str) -> None:
-    ax.text(
-        -0.10, 1.05, label, transform=ax.transAxes, fontsize=12,
-        fontweight="bold", va="top", ha="left"
-    )
-
-
-def add_note(ax: plt.Axes, text: str) -> None:
-    ax.text(
-        0.0, -0.23, text, transform=ax.transAxes, ha="left", va="top",
-        fontsize=7.7, linespacing=1.25
-    )
+def frame_heatmap(ax: plt.Axes) -> None:
+    """Restore the complete frame hidden by seaborn heatmaps."""
+    for spine in ax.spines.values():
+        spine.set_visible(True)
+        spine.set_color(BORDER_GREY)
+        spine.set_linewidth(0.85)
 
 
 def main() -> None:
@@ -355,68 +362,149 @@ def main() -> None:
                 f"R {resident_fleet}\nS {shelter_fleet}"
             )
 
-    sns.set_theme(style="white", context="paper")
-    fig, axes = plt.subplots(1, 3, figsize=(15.5, 5.2), constrained_layout=True)
+    set_theme()
+    fig = plt.figure(figsize=(11.4, 8.2), facecolor="white")
+    grid = fig.add_gridspec(
+        2,
+        2,
+        left=0.09,
+        right=0.965,
+        bottom=0.08,
+        top=0.96,
+        wspace=0.30,
+        hspace=0.34,
+    )
+    axes = np.array(
+        [
+            fig.add_subplot(grid[0, 0]),
+            fig.add_subplot(grid[0, 1]),
+            fig.add_subplot(grid[1, 0]),
+        ],
+        dtype=object,
+    )
+    guide_ax = fig.add_subplot(grid[1, 1])
+
+    volume_cmap = LinearSegmentedColormap.from_list(
+        "required_volume", ["#F7FBFF", "#9ECAE1", BLUE, BLACK]
+    )
+    trip_cmap = LinearSegmentedColormap.from_list(
+        "feasible_trips", ["#F4FBF8", "#9BD8C4", GREEN, BLACK]
+    )
+    fleet_cmap = LinearSegmentedColormap.from_list(
+        "equivalent_fleet", ["#FFF7EC", "#FDBB84", VERMILLION, BLACK]
+    )
 
     volume_annotation = volume.map(lambda value: f"{value:,.1f}")
     sns.heatmap(
         volume,
         ax=axes[0],
-        cmap="YlGnBu",
+        cmap=volume_cmap,
         norm=LogNorm(vmin=float(volume.min().min()), vmax=float(volume.max().max())),
         annot=volume_annotation,
         fmt="",
         linewidths=0.7,
         linecolor="white",
-        cbar_kws={"label": "Required volume (m3/day)", "shrink": 0.8},
+        cbar_kws={
+            "label": "Required volume (m³/day)",
+            "shrink": 0.78,
+            "pad": 0.025,
+            "aspect": 18,
+        },
     )
     axes[0].hlines(3, *axes[0].get_xlim(), color="#303030", linewidth=1.4)
     axes[0].set_xlabel("Per-capita demand scenario")
     axes[0].set_ylabel("")
-    add_note(axes[0], "Resident and shelter requirements are separate ledgers and are not summed.")
 
     sns.heatmap(
         trip_median,
         ax=axes[1],
-        cmap="YlOrBr",
+        cmap=trip_cmap,
         vmin=0,
         vmax=trip_limit["central"],
         annot=trip_annotation,
         fmt="",
         linewidths=0.7,
         linecolor="white",
-        cbar_kws={"label": "Median feasible trips/tanker/day", "shrink": 0.8},
+        cbar_kws={
+            "label": "Median feasible trips/tanker/day",
+            "shrink": 0.78,
+            "pad": 0.025,
+            "aspect": 18,
+        },
     )
     axes[1].set_xlabel("Loading + unloading time")
     axes[1].set_ylabel("Daily work limit")
-    add_note(
-        axes[1],
-        f"Cell: median [min-max] across 36 points; trip cap = {trip_limit['central']:.0f}.\n"
-        f"Best route uses {refill_count} network-linked historical refill candidates.",
-    )
 
     sns.heatmap(
         fleet,
         ax=axes[2],
-        cmap="Reds",
+        cmap=fleet_cmap,
         annot=fleet_annotation,
         fmt="",
         linewidths=0.7,
         linecolor="white",
-        cbar_kws={"label": "Resident-equivalent vehicles", "shrink": 0.8},
+        cbar_kws={
+            "label": "Resident-equivalent vehicles",
+            "shrink": 0.78,
+            "pad": 0.025,
+            "aspect": 18,
+        },
     )
     axes[2].set_xlabel("Daily trip limit")
     axes[2].set_ylabel("Tanker capacity")
-    add_note(
-        axes[2],
-        "Cell: R resident / S shelter vehicles, kept separate.\n"
-        "Central population, 3 L/person/day, 10 h, and 30 + 30 min service.",
-    )
 
     for label, ax in zip("abc", axes, strict=True):
-        add_panel_label(ax, label)
+        panel_label(ax, label, x=-0.09, y=1.055)
+        frame_heatmap(ax)
         ax.tick_params(axis="x", rotation=0)
         ax.tick_params(axis="y", rotation=0)
+
+    guide_ax.set_xlim(0, 1)
+    guide_ax.set_ylim(0, 1)
+    guide_ax.axis("off")
+    guide_ax.add_patch(
+        Rectangle(
+            (0.02, 0.08),
+            0.94,
+            0.84,
+            facecolor=PANEL_FILL,
+            edgecolor=BORDER_GREY,
+            linewidth=0.85,
+        )
+    )
+    guide_ax.text(
+        0.08, 0.84, "Reading guide", fontsize=10.5, fontweight="bold", va="top"
+    )
+    guide_rows = [
+        (BLUE, "a", "Required water volume (m³/day)\nResident and shelter ledgers remain separate."),
+        (GREEN, "b", f"Median feasible trips [minimum–maximum]\nAcross 36 points; daily trip cap = {trip_limit['central']:.0f}."),
+        (VERMILLION, "c", "Equivalent vehicles required\nR = residents; S = shelter evacuees."),
+    ]
+    for y, (color, label, description) in zip(
+        [0.68, 0.49, 0.30], guide_rows, strict=True
+    ):
+        guide_ax.add_patch(
+            Rectangle((0.08, y - 0.012), 0.035, 0.035, facecolor=color, edgecolor="none")
+        )
+        guide_ax.text(
+            0.135,
+            y + 0.005,
+            f"{label}  {description}",
+            fontsize=8.2,
+            va="center",
+            linespacing=1.25,
+        )
+    guide_ax.plot([0.08, 0.90], [0.19, 0.19], color=LIGHT_GREY, linewidth=1.0)
+    guide_ax.text(
+        0.08,
+        0.16,
+        "Panel c: central affected population; 3 L/person/day; 10 h workday;\n"
+        "60 min service. Planning requirement—not observed availability or deliveries.",
+        fontsize=7.4,
+        va="top",
+        color=BLACK,
+        linespacing=1.25,
+    )
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUTPUT_PATH, dpi=600, bbox_inches="tight", facecolor="white")

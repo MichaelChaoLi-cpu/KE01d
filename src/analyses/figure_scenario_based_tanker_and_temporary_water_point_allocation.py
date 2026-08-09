@@ -3,19 +3,27 @@
 
 Plan: Map resident-ledger access ceilings, pooled multi-site tanker trips,
 selected temporary water points, historical refill candidates, schematic support
-bases, and protected service areas under baseline, matched-restriction, and
-critical point-failure states.
-Framework: AnaSOP Sections 5-7 central/minimum resident demand, 500 m access
-arcs, route-constrained refill-pool trip and work-time budgets, a 10-vehicle
-available fleet, and lexicographic unmet-demand then operational-efficiency and
-access-burden allocation. A refill-pool fleet may serve multiple points during
-the day. Historical refill candidates and matched road restrictions remain
-scenario evidence, not verified 2026 operating facilities or confirmed closures.
+bases, and fleet gaps across matched 500, 1,000, and 2,000 m allocation
+catchments.
+Framework: AnaSOP Sections 5-7 central/minimum resident demand,
+route-constrained refill-pool trip and uniform 10-hour logistics-shift budgets,
+a 10-vehicle available fleet, and lexicographic unmet-demand then operational-
+efficiency allocation. The three panels hold the no-modeled-closure road and
+operational states fixed to reveal the shift from access-constrained to
+capacity-constrained allocation. The 2,000 m catchment is an extended planning
+diagnostic, not a walking standard. Historical refill candidates remain scenario
+evidence, not verified 2026 operating facilities.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
+import os
 from pathlib import Path
+
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -28,6 +36,7 @@ from scipy.optimize import Bounds, LinearConstraint, milp
 from scipy.sparse import coo_matrix, csr_matrix, vstack
 from scipy.sparse.csgraph import dijkstra
 from scipy.spatial import cKDTree
+from shapely.geometry import box
 
 from figure_outage_population_and_emergency_water_demand import style_map
 from figure_required_water_volume_and_tanker_workload import parameter_values
@@ -48,6 +57,7 @@ RESTRICTIONS = ROOT / "data/processed/road_restriction_edge_matches_preprocessed
 MUNICIPALITIES = ROOT / "data/processed/kumamoto_reporting_municipalities_preprocessed.parquet"
 PARAMETERS = ROOT / "data/processed/emergency_water_scenario_parameters_preprocessed.parquet"
 OUTPUT_PATH = ROOT / "data/results/figures/Figure_scenario_based_tanker_and_temporary_water_point_allocation.png"
+SOLVER_AUDIT_PATH = ROOT / "data/exp/allocation_solver_audit.json"
 
 PROJECTED_CRS = 6670
 ACCESS_DISTANCE_M = 500.0
@@ -77,6 +87,10 @@ DISTANCE_COLORS = {
     "2,000-5,000 m": "#CC79A7",
     ">5,000 m or unreachable": "#eceff1",
 }
+PRIMARY_MIP_GAP = 0.01
+PHYSICAL_BOUND_GAP = 0.002
+OPERATIONAL_MIP_GAP = 1e-6
+OPERATIONAL_TIME_LIMIT_SECONDS = 900.0
 
 
 @dataclass
@@ -107,6 +121,7 @@ class AllocationResult:
     selected_arcs: pd.DataFrame
     selected_sites: gpd.GeoDataFrame
     failed_point: str | None
+    solver_audit: tuple[dict[str, object], ...]
 
     @property
     def trips_used(self) -> int:
@@ -115,6 +130,56 @@ class AllocationResult:
     @property
     def fleet_used(self) -> int:
         return int(self.vehicles_by_refill.sum())
+
+
+def accepted_milp_result(
+    result: object,
+    stage: str,
+    maximum_gap: float,
+    physical_upper_bound: float | None = None,
+    incumbent_value: float | None = None,
+) -> dict[str, object]:
+    """Require an auditable incumbent rather than silently accepting a timeout."""
+    solution = getattr(result, "x", None)
+    status = int(getattr(result, "status", -1))
+    gap_value = getattr(result, "mip_gap", None)
+    gap = float(gap_value) if gap_value is not None else np.inf
+    physical_gap = None
+    if physical_upper_bound is not None and incumbent_value is not None:
+        physical_gap = (
+            max(0.0, physical_upper_bound - incumbent_value) / physical_upper_bound
+            if physical_upper_bound > 0
+            else 0.0
+        )
+    solver_gap_accepted = np.isfinite(gap) and gap <= maximum_gap
+    physical_gap_accepted = (
+        physical_gap is not None and physical_gap <= PHYSICAL_BOUND_GAP
+    )
+    if (
+        solution is None
+        or status not in {0, 1}
+        or not (solver_gap_accepted or physical_gap_accepted)
+    ):
+        raise RuntimeError(
+            f"{stage} MILP did not meet the publication rule: "
+            f"status={status}; gap={gap}; maximum_gap={maximum_gap}; "
+            f"physical_gap={physical_gap}; "
+            f"message={getattr(result, 'message', 'unavailable')}"
+        )
+    return {
+        "stage": stage,
+        "status": status,
+        "success": bool(getattr(result, "success", False)),
+        "message": str(getattr(result, "message", "")),
+        "objective": float(getattr(result, "fun", np.nan)),
+        "mip_gap": gap,
+        "mip_node_count": int(getattr(result, "mip_node_count", -1)),
+        "physical_upper_bound_liters": physical_upper_bound,
+        "physical_bound_gap": physical_gap,
+        "acceptance_basis": (
+            "solver_gap" if solver_gap_accepted else "physical_capacity_bound"
+        ),
+    }
 
 
 def build_graphs(
@@ -264,7 +329,9 @@ def site_inventory(
         ignore_index=True,
     )
     sites["Source Node"] = pd.to_numeric(sites["Source Node"], errors="coerce")
-    sites = sites.dropna(subset=["Source Node", "Geometry"]).reset_index(drop=True)
+    sites = sites.dropna(subset=["Source Node", "Geometry"]).sort_values(
+        "Site ID", kind="stable"
+    ).reset_index(drop=True)
     sites["Source Node"] = sites["Source Node"].astype(np.int32)
     return gpd.GeoDataFrame(sites, geometry="Geometry", crs=water.crs)
 
@@ -303,7 +370,8 @@ def demand_units(
     units["Older Priority Population"] = (
         units["Mesh Code"].map(older_weight).fillna(0).astype(float)
     )
-    return gpd.GeoDataFrame(units, geometry="Geometry", crs=demand.crs).reset_index(drop=True)
+    units = units.sort_values("Mesh Code", kind="stable").reset_index(drop=True)
+    return gpd.GeoDataFrame(units, geometry="Geometry", crs=demand.crs)
 
 
 def distance_arcs(
@@ -385,7 +453,11 @@ def route_productivity(
         [projected_nodes.geometry.x.to_numpy(), projected_nodes.geometry.y.to_numpy()]
     )
     tree = cKDTree(node_xy)
-    refills = gpd.read_parquet(REFILLS)
+    refills = gpd.read_parquet(REFILLS).sort_values(
+        ["P21 Inspection ID", "Water Treatment Facility Name"],
+        kind="stable",
+        na_position="last",
+    ).reset_index(drop=True)
     projected_refills = refills.to_crs(PROJECTED_CRS)
     refill_snap, refill_node = tree.query(
         np.column_stack(
@@ -399,7 +471,9 @@ def route_productivity(
     bases = bases.loc[
         bases["Candidate Dispatch Base"].fillna(False)
         & bases["Network Snap Accepted"].fillna(False)
-    ].merge(
+    ].sort_values(
+        ["Fire Facility Name", "Address"], kind="stable", na_position="last"
+    ).reset_index(drop=True).merge(
         edge_lookup(retained),
         left_on="Access Road Edge ID",
         right_on="Road Edge ID",
@@ -713,6 +787,8 @@ def solve_allocation(
     bounds_upper[vehicle_offset : vehicle_offset + refill_count] = float(fleet_size)
     integrality = np.ones(variable_count, dtype=np.int8)
 
+    solver_audit: list[dict[str, object]] = []
+
     primary_cost = np.zeros(variable_count)
     primary_cost[:arc_count] = -arc_demand
     primary = milp(
@@ -720,14 +796,63 @@ def solve_allocation(
         integrality=integrality,
         bounds=Bounds(bounds_lower, bounds_upper),
         constraints=LinearConstraint(matrix, lower_bound, upper_bound),
-        options={"time_limit": 45.0, "mip_rel_gap": 1e-5, "presolve": True},
+        options={
+            "time_limit": 300.0,
+            "mip_rel_gap": PRIMARY_MIP_GAP,
+            "presolve": True,
+        },
     )
     if primary.x is None:
-        raise RuntimeError(f"Allocation failed for {scenario.label}: {primary.message}")
+        raise RuntimeError(
+            f"Protected-demand MILP returned no incumbent for {scenario.label}: "
+            f"{primary.message}"
+        )
     delivered = float(np.dot(arc_demand, np.rint(primary.x[:arc_count])))
+    accessible_units = np.unique(arcs["Unit Index"].to_numpy(np.int32))
+    accessible_demand = float(demand[accessible_units].sum())
+    physical_upper_bound = min(
+        accessible_demand,
+        float(fleet_size * scenario.trip_limit) * scenario.trip_capacity_liters,
+    )
+    solver_audit.append(
+        accepted_milp_result(
+            primary,
+            "protected-demand",
+            PRIMARY_MIP_GAP,
+            physical_upper_bound=physical_upper_bound,
+            incumbent_value=delivered,
+        )
+    )
     solution = primary
 
     if refine:
+        def solve_stage(
+            cost: np.ndarray,
+            stage: str,
+            stage_matrix: csr_matrix,
+            stage_lower: np.ndarray,
+            stage_upper: np.ndarray,
+            maximum_gap: float,
+            time_limit: float = 120.0,
+        ) -> object:
+            stage_result = milp(
+                cost,
+                integrality=integrality,
+                bounds=Bounds(bounds_lower, bounds_upper),
+                constraints=LinearConstraint(
+                    stage_matrix, stage_lower, stage_upper
+                ),
+                options={
+                    "time_limit": time_limit,
+                    "mip_rel_gap": maximum_gap,
+                    "presolve": True,
+                },
+            )
+            solver_audit.append(
+                accepted_milp_result(stage_result, stage, maximum_gap)
+            )
+            return stage_result
+
         delivery_row = csr_matrix(
             (
                 arc_demand,
@@ -735,62 +860,32 @@ def solve_allocation(
             ),
             shape=(1, variable_count),
         )
-        operational_matrix = vstack([matrix, delivery_row], format="csr")
-        operational_lower = np.concatenate([lower_bound, [delivered - 1e-4]])
-        operational_upper = np.concatenate([upper_bound, [np.inf]])
+        stage_matrix = vstack([matrix, delivery_row], format="csr")
+        stage_lower = np.concatenate([lower_bound, [delivered - 1e-4]])
+        stage_upper = np.concatenate([upper_bound, [np.inf]])
+
+        maximum_trips = int(fleet_size * scenario.trip_limit)
+        maximum_selected_temporary_sites = min(temp_count, maximum_trips)
+        trip_weight = float(maximum_selected_temporary_sites + 1)
+        vehicle_weight = float((maximum_trips + 1) * trip_weight)
         operational_cost = np.zeros(variable_count)
-        operational_cost[route_offset : route_offset + route_count] = 1_000.0
         operational_cost[
             vehicle_offset : vehicle_offset + refill_count
-        ] = 1_000_000.0
-        operational_cost[temp_offset:] = 1.0
-        operational = milp(
-            operational_cost,
-            integrality=integrality,
-            bounds=Bounds(bounds_lower, bounds_upper),
-            constraints=LinearConstraint(
-                operational_matrix, operational_lower, operational_upper
-            ),
-            options={"time_limit": 60.0, "mip_rel_gap": 1e-6, "presolve": True},
-        )
-        if operational.x is not None:
-            solution = operational
-
-        operational_value = float(
-            np.dot(operational_cost, np.rint(solution.x))
-        )
-        operational_row = csr_matrix(operational_cost.reshape(1, -1))
-        refined_matrix = vstack(
-            [operational_matrix, operational_row], format="csr"
-        )
-        refined_lower = np.concatenate([operational_lower, [-np.inf]])
-        refined_upper = np.concatenate(
-            [operational_upper, [operational_value + 1e-4]]
-        )
-        unit_index = arcs["Unit Index"].to_numpy(np.int32)
-        older = units["Older Priority Population"].to_numpy(float)[unit_index]
-        distance = arcs["Distance (m)"].to_numpy(float)
-        secondary_cost = np.zeros(variable_count)
-        secondary_cost[:arc_count] = (
-            older * distance * 1000.0 + arc_demand * distance
-        )
-        secondary_cost[
+        ] = vehicle_weight
+        operational_cost[
             route_offset : route_offset + route_count
-        ] = scenario.route_cycle_minutes
-        secondary_cost[
-            vehicle_offset : vehicle_offset + refill_count
-        ] = scenario.refill_base_minutes
-        refined = milp(
-            secondary_cost,
-            integrality=integrality,
-            bounds=Bounds(bounds_lower, bounds_upper),
-            constraints=LinearConstraint(
-                refined_matrix, refined_lower, refined_upper
-            ),
-            options={"time_limit": 45.0, "mip_rel_gap": 1e-5, "presolve": True},
+        ] = trip_weight
+        if temp_count:
+            operational_cost[temp_offset:] = 1.0
+        solution = solve_stage(
+            operational_cost,
+            "bounded-lexicographic-operations",
+            stage_matrix,
+            stage_lower,
+            stage_upper,
+            OPERATIONAL_MIP_GAP,
+            time_limit=OPERATIONAL_TIME_LIMIT_SECONDS,
         )
-        if refined.x is not None:
-            solution = refined
 
     selected_mask = np.rint(solution.x[:arc_count]).astype(bool)
     selected_arcs = arcs.loc[selected_mask].copy()
@@ -834,6 +929,7 @@ def solve_allocation(
         selected_arcs,
         selected_sites,
         failed_point,
+        tuple(solver_audit),
     )
 
 
@@ -890,6 +986,50 @@ def validate_solution(
         raise ValueError("Delivered water does not reconcile to protected demand")
 
 
+def allocation_signature(
+    scenario: ScenarioInputs,
+    result: AllocationResult,
+) -> dict[str, object]:
+    assignments = sorted(
+        (
+            str(scenario.units.iloc[int(row["Unit Index"])]["Mesh Code"]),
+            str(scenario.sites.iloc[int(row["Site Index"])]["Site ID"]),
+        )
+        for _, row in result.selected_arcs.iterrows()
+    )
+    route_plan = sorted(
+        (
+            str(scenario.sites.iloc[int(scenario.route_site_index[index])]["Site ID"]),
+            str(
+                scenario.refills.iloc[int(scenario.route_refill_index[index])][
+                    "P21 Inspection ID"
+                ]
+            ),
+            int(trips),
+        )
+        for index, trips in enumerate(result.route_trips)
+        if int(trips) > 0
+    )
+    vehicle_plan = sorted(
+        (
+            str(scenario.refills.iloc[index]["P21 Inspection ID"]),
+            int(vehicles),
+        )
+        for index, vehicles in enumerate(result.vehicles_by_refill)
+        if int(vehicles) > 0
+    )
+    return {
+        "delivery_liters": round(float(result.delivery_liters), 6),
+        "fleet_used": result.fleet_used,
+        "trips_used": result.trips_used,
+        "temporary_sites": int(result.selected_sites["Temporary Site"].sum()),
+        "selected_site_ids": sorted(result.selected_sites["Site ID"].astype(str)),
+        "assignments": assignments,
+        "route_plan": route_plan,
+        "vehicle_plan": vehicle_plan,
+    }
+
+
 def remove_announced_site(
     baseline: ScenarioInputs, site_index: int
 ) -> ScenarioInputs:
@@ -910,7 +1050,7 @@ def remove_announced_site(
     ]
     keep_route = baseline.route_site_index != site_index
     return ScenarioInputs(
-        "Worst single announced-point failure",
+        "High-load announced-point failure screen",
         baseline.units,
         baseline.sites.loc[keep].reset_index(drop=True),
         arcs.reset_index(drop=True),
@@ -926,28 +1066,6 @@ def remove_announced_site(
         baseline.dispatch_bases,
         baseline.closed_edge_count,
     )
-
-
-def worst_point_failure(
-    baseline: ScenarioInputs, fleet_size: int
-) -> tuple[str, ScenarioInputs, AllocationResult]:
-    """Reoptimize after removing each announced point and retain the worst result."""
-    existing_indices = np.flatnonzero(
-        ~baseline.sites["Temporary Site"].to_numpy(bool)
-    )
-    screened: list[tuple[float, int, ScenarioInputs]] = []
-    for order, site_index in enumerate(existing_indices, start=1):
-        scenario = remove_announced_site(baseline, int(site_index))
-        result = solve_allocation(scenario, fleet_size, refine=False)
-        screened.append((result.delivery_liters, int(site_index), scenario))
-        if order % 6 == 0:
-            print(f"Single-point failure screening: {order}/{len(existing_indices)}")
-    _, worst_index, worst_scenario = min(screened, key=lambda item: item[0])
-    failed_name = str(baseline.sites.iloc[worst_index]["Site Name"])
-    result = solve_allocation(
-        worst_scenario, fleet_size, failed_point=failed_name, refine=True
-    )
-    return failed_name, worst_scenario, result
 
 
 def add_panel(
@@ -1027,11 +1145,17 @@ def add_panel(
         marker="^", markersize=28, zorder=8
     )
 
+    total_demand_liters = float(
+        scenario.units["Estimated Water Demand (L/day)"].sum()
+    )
+    delivered_share = result.delivery_liters / total_demand_liters
     ax.text(
         0.02,
         0.035,
         (
             f"{scenario.label}\n"
+            f"Delivered: {result.delivery_liters / 1000:,.1f}/"
+            f"{total_demand_liters / 1000:,.1f} m³/day ({delivered_share:.1%})\n"
             f"Fleet/trips: {result.fleet_used}/{fleet_size} tankers; "
             f"{result.trips_used}/{fleet_size * scenario.trip_limit} trips\n"
             f"Selected sites: {len(selected)} "
@@ -1101,6 +1225,11 @@ def add_legend_panel(ax: plt.Axes) -> None:
     ax.add_artist(distance_legend)
 
     logistics_handles = [
+        Patch(
+            facecolor=FLEET_GAP_COLOR,
+            edgecolor="#b56a21",
+            label="Within panel catchment but unserved (fleet gap)",
+        ),
         Line2D(
             [0], [0], marker="o", color="none", markerfacecolor=SITE_COLOR,
             markeredgecolor="white", markersize=7,
@@ -1126,7 +1255,7 @@ def add_legend_panel(ax: plt.Axes) -> None:
         handles=logistics_handles,
         title="Allocation and logistics",
         loc="lower left",
-        bbox_to_anchor=(0.055, 0.26),
+        bbox_to_anchor=(0.055, 0.20),
         ncol=1,
         frameon=False,
         fontsize=8.8,
@@ -1136,6 +1265,62 @@ def add_legend_panel(ax: plt.Axes) -> None:
         borderaxespad=0,
     )
     logistics_legend._legend_box.align = "left"
+    ax.text(
+        0.065,
+        0.60,
+        "Allocation catchment: 500 / 1,000 / 2,000 m by panel",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=8.3,
+        color="#374151",
+    )
+    ax.text(
+        0.065,
+        0.565,
+        "2,000 m is an extended diagnostic, not a walking standard.",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=7.7,
+        color="#5f6b76",
+    )
+
+
+def focused_plot_bounds(
+    scenarios: list[tuple[ScenarioInputs, AllocationResult]],
+) -> tuple[tuple[float, float, float, float], tuple[float, float, float, float]]:
+    """Bound maps to positive-demand units and facilities used by the solutions."""
+    geometry_parts: list[gpd.GeoSeries] = []
+    for scenario, result in scenarios:
+        geometry_parts.append(scenario.units.geometry)
+        geometry_parts.append(result.selected_sites.geometry)
+        selected = result.selected_sites
+        refill_rows = np.unique(selected["Best Refill Row"].to_numpy(np.int32))
+        supporting_refills = scenario.refills.loc[refill_rows]
+        geometry_parts.append(supporting_refills.geometry)
+        base_rows = supporting_refills["Supporting Base Row"].astype(int).unique()
+        geometry_parts.append(scenario.dispatch_bases.iloc[base_rows].geometry)
+
+    focus = gpd.GeoDataFrame(
+        geometry=pd.concat(geometry_parts, ignore_index=True),
+        crs=scenarios[0][0].units.crs,
+    ).to_crs(PROJECTED_CRS)
+    min_x, min_y, max_x, max_y = (float(value) for value in focus.total_bounds)
+    padding_m = 3_000.0
+    projected_bounds = (
+        min_x - padding_m,
+        min_y - padding_m,
+        max_x + padding_m,
+        max_y + padding_m,
+    )
+    geographic_bounds = tuple(
+        float(value)
+        for value in gpd.GeoSeries(
+            [box(*projected_bounds)], crs=PROJECTED_CRS
+        ).to_crs(4326).total_bounds
+    )
+    return projected_bounds, geographic_bounds
 
 
 def main() -> None:
@@ -1163,29 +1348,67 @@ def main() -> None:
     water = gpd.read_parquet(WATER_POINTS)
     staging = gpd.read_parquet(STAGING)
     older_weight = older_priority_weights()
-    restriction = pd.read_parquet(
-        RESTRICTIONS, columns=["Matched Road Edge ID", "Road Edge Match Status"]
-    )
-    restriction_edges = set(
-        restriction.loc[
-            restriction["Road Edge Match Status"].eq("matched_primary"),
-            "Matched Road Edge ID",
-        ].dropna().astype(str)
-    )
-
-    baseline = prepare_scenario(
-        "No modeled road closures", set(), None, nodes, edges, demand, access,
-        water, staging, parameters, older_weight
-    )
-    baseline_result = solve_allocation(baseline, fleet_size)
-    disruption = prepare_scenario(
-        "Road-restriction stress test", restriction_edges, None, nodes, edges,
-        demand, access, water, staging, parameters, older_weight
-    )
-    disruption_result = solve_allocation(disruption, fleet_size)
-    failed_point, failure, failure_result = worst_point_failure(
-        baseline, fleet_size
-    )
+    scenario_specs = [
+        ("500 m: Access-constrained", 500.0),
+        ("1,000 m: Transition", 1_000.0),
+        ("2,000 m: Capacity-constrained", 2_000.0),
+    ]
+    scenarios: list[tuple[ScenarioInputs, AllocationResult]] = []
+    reproducibility_audit: list[dict[str, object]] = []
+    for label, access_distance_m in scenario_specs:
+        scenario = prepare_scenario(
+            label,
+            set(),
+            None,
+            nodes,
+            edges,
+            demand,
+            access,
+            water,
+            staging,
+            parameters,
+            older_weight,
+            access_distance_m=access_distance_m,
+        )
+        result = solve_allocation(scenario, fleet_size)
+        repeat_result = solve_allocation(scenario, fleet_size)
+        validate_solution(scenario, result, fleet_size)
+        validate_solution(scenario, repeat_result, fleet_size)
+        first_signature = allocation_signature(scenario, result)
+        repeat_signature = allocation_signature(scenario, repeat_result)
+        substantive_keys = [
+            "delivery_liters", "fleet_used", "trips_used", "temporary_sites"
+        ]
+        substantive_agreement = all(
+            first_signature[key] == repeat_signature[key]
+            for key in substantive_keys
+        )
+        if not substantive_agreement:
+            raise RuntimeError(
+                f"Independent reruns disagree on substantive objectives for {label}"
+            )
+        exact_agreement = first_signature == repeat_signature
+        reproducibility_audit.append(
+            {
+                "scenario": label,
+                "thread_convention": "single thread",
+                "substantive_objective_agreement": substantive_agreement,
+                "selected_site_agreement": (
+                    first_signature["selected_site_ids"]
+                    == repeat_signature["selected_site_ids"]
+                ),
+                "exact_solution_agreement": exact_agreement,
+                "interpretation": (
+                    "reproducible configuration"
+                    if exact_agreement
+                    else "substantively equivalent alternative configurations"
+                ),
+                "first_signature": first_signature,
+                "repeat_signature": repeat_signature,
+                "repeat_stages": list(repeat_result.solver_audit),
+            }
+        )
+        scenarios.append((scenario, result))
 
     municipalities = gpd.read_parquet(MUNICIPALITIES)
     affected_municipalities = municipalities.loc[
@@ -1193,24 +1416,13 @@ def main() -> None:
     ].copy()
     if len(affected_municipalities) != 3:
         raise ValueError("Expected the three positive-outage municipalities")
-    geographic_bounds = tuple(
-        float(value) for value in affected_municipalities.total_bounds
-    )
     municipalities = municipalities.to_crs(PROJECTED_CRS)
-    affected_municipalities = affected_municipalities.to_crs(PROJECTED_CRS)
-    projected_bounds = tuple(
-        float(value) for value in affected_municipalities.total_bounds
-    )
 
     sns.set_theme(style="white", context="paper")
     fig, axes = plt.subplots(2, 2, figsize=(12.8, 9.2), constrained_layout=True)
     map_axes = [axes[0, 0], axes[0, 1], axes[1, 0]]
     key_ax = axes[1, 1]
-    scenarios = [
-        (baseline, baseline_result),
-        (disruption, disruption_result),
-        (failure, failure_result),
-    ]
+    projected_bounds, geographic_bounds = focused_plot_bounds(scenarios)
     for scenario, result in scenarios:
         validate_solution(scenario, result, fleet_size)
     for label, ax, (scenario, result) in zip(
@@ -1235,6 +1447,26 @@ def main() -> None:
     fig.savefig(OUTPUT_PATH, dpi=600, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
+    solver_audit = {
+        "runs": [
+            {
+                "scenario": scenario.label,
+                "fleet_size": fleet_size,
+                "delivery_liters": result.delivery_liters,
+                "fleet_used": result.fleet_used,
+                "trips_used": result.trips_used,
+                "stages": list(result.solver_audit),
+            }
+            for scenario, result in scenarios
+        ],
+        "reproducibility": reproducibility_audit,
+    }
+    SOLVER_AUDIT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    SOLVER_AUDIT_PATH.write_text(
+        json.dumps(solver_audit, indent=2, ensure_ascii=True) + "\n",
+        encoding="utf-8",
+    )
+
     for scenario, result in scenarios:
         print(
             f"{scenario.label}: delivered={result.delivery_liters / 1000:,.3f} m3/day; "
@@ -1243,8 +1475,14 @@ def main() -> None:
             f"temporary={int(result.selected_sites['Temporary Site'].sum())}; "
             f"closed edges={scenario.closed_edge_count}"
         )
-    print(f"Critical failed point: {failed_point}")
+    for audit in reproducibility_audit:
+        print(
+            f"{audit['scenario']} rerun: {audit['interpretation']}; "
+            f"selected-site agreement={audit['selected_site_agreement']}; "
+            f"exact agreement={audit['exact_solution_agreement']}"
+        )
     print(f"Saved: {OUTPUT_PATH.relative_to(ROOT)}")
+    print(f"Saved audit: {SOLVER_AUDIT_PATH.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

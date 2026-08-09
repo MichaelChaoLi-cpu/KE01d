@@ -1,0 +1,2183 @@
+doc_type: actionbrief
+version: 1.0.0
+datasetDictionary:
+  P21-12_43_GML.zip::P21-12a_43:
+    datasetSourceName: P21-12_43_GML.zip::P21-12a_43.shp
+    datasetDescription: Historical water-supply-area polygons used only for service context and capacity sensitivity.
+    datasetAttribute: shapefile
+    datasetProvider: Ministry of Land, Infrastructure, Transport and Tourism (MLIT), National Land Numerical Information
+    datasetGenerationInfo: Official MLIT P21 layer extracted for Kumamoto Prefecture with source reference and edition
+      years retained.
+    datasetPeriod: 2010 reference year; 2012 dataset edition
+    datasetScale: 385 historical water-supply-area records
+    datasetSpatialResolution: Water-supply-area polygon
+    datasetTemporalResolution: Single historical cross-section
+    datasetPreprocessingInfo: Decoded source text, assigned readable fields, standardized geometry to EPSG:6668,
+      treated zero capacity as missing, and flagged capacity as historical only.
+  P21-12_43_GML.zip::P21-12b_43:
+    datasetSourceName: P21-12_43_GML.zip::P21-12b_43.shp
+    datasetDescription: Historical water-treatment-facility points used as candidate tanker refill locations.
+    datasetAttribute: shapefile
+    datasetProvider: Ministry of Land, Infrastructure, Transport and Tourism (MLIT), National Land Numerical Information
+    datasetGenerationInfo: Official MLIT P21 layer extracted for Kumamoto Prefecture with source reference and edition
+      years retained.
+    datasetPeriod: 2010 reference year; 2012 dataset edition
+    datasetScale: 153 historical treatment-facility records
+    datasetSpatialResolution: Water-treatment-facility point
+    datasetTemporalResolution: Single historical cross-section
+    datasetPreprocessingInfo: Decoded source text, assigned readable fields, standardized geometry to EPSG:6668,
+      treated zero capacity as missing, and flagged capacity as historical only.
+  derived:emergency_water_points_network_access:
+    datasetSourceName: derived:emergency_water_points_network_access
+    datasetDescription: Announced emergency water points with resolved coordinates and accepted road-network connectors.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from official municipal emergency notices and mapped facility sources
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: 2026-07-29 to 2026-08-08
+    datasetScale: 36 announced water points
+    datasetSpatialResolution: Individual facility point
+    datasetTemporalResolution: Latest applicable event schedule per point
+    datasetPreprocessingInfo: Standardized geometry to EPSG:6668, retained accepted and rejected connectors, and
+      did not infer operational availability.
+  derived:emergency_water_scenario_parameters:
+    datasetSourceName: derived:emergency_water_scenario_parameters
+    datasetDescription: Official-reference and researcher-defined assumptions for demand, access, fleet, and operations.
+    datasetAttribute: table
+    datasetProvider: Authors, with cited official references where available
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: 2026 planning analysis
+    datasetScale: 37 parameter-level records
+    datasetSpatialResolution: Study-level scenario parameter
+    datasetTemporalResolution: Static scenario design
+    datasetPreprocessingInfo: Applied the documented deterministic rules, retained unmatched records and uncertainty
+      states, and avoided unsupported imputation.
+  derived:kumamoto_reporting_municipalities:
+    datasetSourceName: derived:kumamoto_reporting_municipalities
+    datasetDescription: Municipality polygons used for outage reporting and output aggregation.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from MLIT N03 administrative areas
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: 2025-01-01 boundary reference
+    datasetScale: 45 reporting municipalities
+    datasetSpatialResolution: Municipality polygon
+    datasetTemporalResolution: Single boundary reference date
+    datasetPreprocessingInfo: Applied the documented deterministic rules, retained unmatched records and uncertainty
+      states, and avoided unsupported imputation.
+  derived:municipality_outage_demand_scenarios:
+    datasetSourceName: derived:municipality_outage_demand_scenarios
+    datasetDescription: Municipality-level outage observations, population bounds, and water-demand scenarios.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from MLIT situation reports and 2020 census meshes
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: Current outage state at 2026-08-08 07:30 JST
+    datasetScale: 414 municipality-scenario records
+    datasetSpatialResolution: Municipality by outage-population and demand scenario
+    datasetTemporalResolution: Single event snapshot with nine scenario combinations
+    datasetPreprocessingInfo: Applied the documented deterministic rules, retained unmatched records and uncertainty
+      states, and avoided unsupported imputation.
+  derived:population_mesh_outage_demand_scenarios:
+    datasetSourceName: derived:population_mesh_outage_demand_scenarios
+    datasetDescription: Small-area resident outage-population bounds and daily emergency-water demand scenarios.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from MLIT outage reports and Statistics Bureau census meshes
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: 2020 census population under the 2026-08-08 outage snapshot
+    datasetScale: 566,505 mesh-scenario records
+    datasetSpatialResolution: 125 m population mesh by nine scenario combinations
+    datasetTemporalResolution: Single event snapshot with scenario variation
+    datasetPreprocessingInfo: Retained native census support and disclosure status, standardized geometry to EPSG:6668,
+      and did not duplicate suppressed group values across fine meshes.
+  derived:reporting_unit_municipality_crosswalk:
+    datasetSourceName: derived:reporting_unit_municipality_crosswalk
+    datasetDescription: Explicit linkage between official outage-reporting units and the Kumamoto study geography.
+    datasetAttribute: table
+    datasetProvider: Authors
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: 2026 event reporting structure
+    datasetScale: 19 reporting-unit records
+    datasetSpatialResolution: Reporting unit
+    datasetTemporalResolution: Static event crosswalk
+    datasetPreprocessingInfo: Applied the documented deterministic rules, retained unmatched records and uncertainty
+      states, and avoided unsupported imputation.
+  derived:road_restriction_edge_matches:
+    datasetSourceName: derived:road_restriction_edge_matches
+    datasetDescription: Candidate links between reported road restrictions and routable road edges.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from MLIT restriction observations and the MLIT-based road network
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: 2026-07-29 to 2026-08-07
+    datasetScale: 98,884 candidate-edge rows representing 680 restriction observations
+    datasetSpatialResolution: Restriction observation by candidate road edge
+    datasetTemporalResolution: Repeated event snapshots
+    datasetPreprocessingInfo: Standardized readable fields and geometry, retained unmatched or disconnected records,
+      and treated availability and travel impedance as scenario inputs.
+  derived:shelter_water_demand_network_access:
+    datasetSourceName: derived:shelter_water_demand_network_access
+    datasetDescription: Current public shelters with evacuee water demand, utility status, resolved locations, and
+      network access.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from Yatsushiro City reports and official evacuation-facility coordinates
+    datasetGenerationInfo: Constructed by this study from declared source layers using deterministic linkage, aggregation,
+      or scenario rules.
+    datasetPeriod: Shelter snapshot at 2026-08-06 18:00 JST
+    datasetScale: 123 records representing 41 shelters across three demand levels
+    datasetSpatialResolution: Individual shelter point by demand scenario
+    datasetTemporalResolution: Single event snapshot with scenario variation
+    datasetPreprocessingInfo: Standardized geometry to EPSG:6668, retained accepted and rejected connectors, and
+      did not infer operational availability.
+  emergency_water_points:
+    datasetSourceName: emergency_water_points.csv
+    datasetDescription: Officially announced emergency water-point names, schedules, allocation limits, and status
+      metadata.
+    datasetAttribute: table
+    datasetProvider: Yatsushiro City, Uki City, and Hikawa Town official emergency notices
+    datasetGenerationInfo: Extracted from official event records with source URL, retrieval time, and record-level
+      provenance retained.
+    datasetPeriod: 2026-07-29 to 2026-08-08
+    datasetScale: 36 announced water points
+    datasetSpatialResolution: Individual announced facility
+    datasetTemporalResolution: Event schedule snapshot
+    datasetPreprocessingInfo: Assigned readable English variables, parsed declared numeric and time fields, preserved
+      missing values, and retained provenance.
+  kumamoto_administrative_areas_preprocessed:
+    datasetSourceName: kumamoto_administrative_areas_preprocessed.parquet
+    datasetDescription: Municipality and designated-city ward polygons used for spatial linkage and map context.
+    datasetAttribute: table
+    datasetProvider: Ministry of Land, Infrastructure, Transport and Tourism (MLIT), National Land Numerical Information
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2025-01-01 boundary reference
+    datasetScale: 49 municipality or ward records
+    datasetSpatialResolution: Municipality or ward polygon
+    datasetTemporalResolution: Single boundary reference date
+    datasetPreprocessingInfo: Assigned readable English variables, parsed declared numeric and time fields, preserved
+      missing values, and retained provenance.
+  kumamoto_dispatch_base_network_access_preprocessed:
+    datasetSourceName: kumamoto_dispatch_base_network_access_preprocessed.parquet
+    datasetDescription: Historical fire facilities screened as candidate tanker dispatch bases and linked to the
+      road network.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from MLIT P17 fire facilities and the MLIT-based road network
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2012 facility roster with 2024 network linkage
+    datasetScale: 81 candidate dispatch-base records
+    datasetSpatialResolution: Individual fire-facility point
+    datasetTemporalResolution: Static historical candidate layer
+    datasetPreprocessingInfo: Standardized geometry to EPSG:6668, retained accepted and rejected connectors, and
+      did not infer operational availability.
+  kumamoto_fire_stations_2012_preprocessed:
+    datasetSourceName: kumamoto_fire_stations_2012_preprocessed.parquet
+    datasetDescription: Historical fire stations, branches, and outposts used to define possible tanker dispatch
+      bases.
+    datasetAttribute: table
+    datasetProvider: Ministry of Land, Infrastructure, Transport and Tourism (MLIT), National Land Numerical Information
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2012 reference
+    datasetScale: 94 fire facilities, including 81 candidate bases
+    datasetSpatialResolution: Fire-facility point
+    datasetTemporalResolution: Single historical cross-section
+    datasetPreprocessingInfo: Assigned readable English variables, parsed declared numeric and time fields, preserved
+      missing values, and retained provenance.
+  kumamoto_population_disclosure_groups_preprocessed:
+    datasetSourceName: kumamoto_population_disclosure_groups_preprocessed.parquet
+    datasetDescription: Disclosure-group population, older-age, and household totals used where fine cells are aggregated.
+    datasetAttribute: table
+    datasetProvider: Statistics Bureau of Japan / e-Stat
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2020 Population Census
+    datasetScale: 36,657 disclosure-group records
+    datasetSpatialResolution: Census disclosure group linked to 125 m cells
+    datasetTemporalResolution: Single census reference year
+    datasetPreprocessingInfo: Retained native census support and disclosure status, standardized geometry to EPSG:6668,
+      and did not duplicate suppressed group values across fine meshes.
+  kumamoto_population_group_network_access_preprocessed:
+    datasetSourceName: kumamoto_population_group_network_access_preprocessed.parquet
+    datasetDescription: Disclosure-group population records with representative road-network connectors for older-resident
+      access.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from census groups and the MLIT-based road network
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2020 census population with 2024 network linkage
+    datasetScale: 36,657 disclosure-group access records
+    datasetSpatialResolution: Census disclosure group
+    datasetTemporalResolution: Static cross-sectional linkage
+    datasetPreprocessingInfo: Standardized geometry to EPSG:6668, retained accepted and rejected connectors, and
+      did not infer operational availability.
+  kumamoto_population_mesh_125m_preprocessed:
+    datasetSourceName: kumamoto_population_mesh_125m_preprocessed.parquet
+    datasetDescription: Population, household, and disclosure attributes for the populated 125 m analysis grid.
+    datasetAttribute: table
+    datasetProvider: Statistics Bureau of Japan / e-Stat
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2020 Population Census
+    datasetScale: 62,945 populated meshes
+    datasetSpatialResolution: 125 m population mesh
+    datasetTemporalResolution: Single census reference year
+    datasetPreprocessingInfo: Retained native census support and disclosure status, standardized geometry to EPSG:6668,
+      and did not duplicate suppressed group values across fine meshes.
+  kumamoto_population_mesh_network_access_preprocessed:
+    datasetSourceName: kumamoto_population_mesh_network_access_preprocessed.parquet
+    datasetDescription: Population-mesh records linked to the routable road network for distance and allocation
+      analysis.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from census meshes and the MLIT-based road network
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2020 census population with 2024 network linkage
+    datasetScale: 62,945 mesh access records
+    datasetSpatialResolution: 125 m population mesh
+    datasetTemporalResolution: Static cross-sectional linkage
+    datasetPreprocessingInfo: Standardized geometry to EPSG:6668, retained accepted and rejected connectors, and
+      did not infer operational availability.
+  kumamoto_routable_road_edges_preprocessed:
+    datasetSourceName: kumamoto_routable_road_edges_preprocessed.parquet
+    datasetDescription: Grade-aware routable road edges with length, speed, travel time, hazard, and route attributes.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from MLIT N13 road centerlines
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2024 source network with contextual overlays
+    datasetScale: 390,234 routable road edges
+    datasetSpatialResolution: Routable road edge
+    datasetTemporalResolution: Static baseline network
+    datasetPreprocessingInfo: Standardized readable fields and geometry, retained unmatched or disconnected records,
+      and treated availability and travel impedance as scenario inputs.
+  kumamoto_routable_road_nodes_preprocessed:
+    datasetSourceName: kumamoto_routable_road_nodes_preprocessed.parquet
+    datasetDescription: Road nodes defining topology for shortest-path distance and travel-time calculations.
+    datasetAttribute: table
+    datasetProvider: Authors, derived from MLIT N13 road centerlines
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: 2024 source network
+    datasetScale: 314,391 routable road nodes
+    datasetSpatialResolution: Road-network node
+    datasetTemporalResolution: Static baseline network
+    datasetPreprocessingInfo: Standardized readable fields and geometry, retained unmatched or disconnected records,
+      and treated availability and travel impedance as scenario inputs.
+  outage_tanker_snapshots:
+    datasetSourceName: outage_tanker_snapshots.csv
+    datasetDescription: Official observations of outage households, damage status, and reported tanker deployments.
+    datasetAttribute: table
+    datasetProvider: Ministry of Land, Infrastructure, Transport and Tourism (MLIT)
+    datasetGenerationInfo: Extracted from official event records with source URL, retrieval time, and record-level
+      provenance retained.
+    datasetPeriod: 2026-07-29 to 2026-08-08
+    datasetScale: 546 reporting-unit records from 31 report snapshots
+    datasetSpatialResolution: Reporting unit by situation-report snapshot
+    datasetTemporalResolution: Irregular event-report updates
+    datasetPreprocessingInfo: Assigned readable English variables, parsed declared numeric and time fields, preserved
+      missing values, and retained provenance.
+  road_restrictions:
+    datasetSourceName: road_restrictions.csv
+    datasetDescription: Timestamped road restrictions with status, cause, geometry, detour, and isolation attributes.
+    datasetAttribute: table
+    datasetProvider: Ministry of Land, Infrastructure, Transport and Tourism (MLIT) emergency road-information layers
+    datasetGenerationInfo: Extracted from official event records with source URL, retrieval time, and record-level
+      provenance retained.
+    datasetPeriod: 2026-07-29 to 2026-08-07
+    datasetScale: 680 road-restriction observations
+    datasetSpatialResolution: Reported restricted segment or point by snapshot
+    datasetTemporalResolution: Repeated event snapshots
+    datasetPreprocessingInfo: Standardized readable fields and geometry, retained unmatched or disconnected records,
+      and treated availability and travel impedance as scenario inputs.
+  shelters_current:
+    datasetSourceName: shelters_current.csv
+    datasetDescription: Current shelter occupancy, water, electricity, air-conditioning, and sanitation status.
+    datasetAttribute: table
+    datasetProvider: Yatsushiro City official shelter status report
+    datasetGenerationInfo: Extracted from official event records with source URL, retrieval time, and record-level
+      provenance retained.
+    datasetPeriod: Snapshot at 2026-08-06 18:00 JST
+    datasetScale: 41 current public shelters
+    datasetSpatialResolution: Individual shelter facility
+    datasetTemporalResolution: Single event snapshot
+    datasetPreprocessingInfo: Assigned readable English variables, parsed declared numeric and time fields, preserved
+      missing values, and retained provenance.
+  staging_site_candidates:
+    datasetSourceName: staging_site_candidates.parquet
+    datasetDescription: Mapped public and emergency facilities screened as candidate temporary water-distribution
+      locations.
+    datasetAttribute: table
+    datasetProvider: Authors, compiled from MLIT, e-Stat, and official evacuation-facility layers
+    datasetGenerationInfo: Copied immutably from an audited upstream preprocessing output and restricted to the
+      approved analysis variables.
+    datasetPeriod: Mixed pre-event reference vintages through 2024
+    datasetScale: 6,105 candidate sites
+    datasetSpatialResolution: Individual mapped facility point
+    datasetTemporalResolution: Static candidate inventory
+    datasetPreprocessingInfo: Reprojected to EPSG:6668, retained 159 unmatched candidates, removed prior-study outcomes,
+      and treated screening only as candidate eligibility.
+variableDictionary:
+  municipality:
+    variableNameInDataset: Municipality
+    variableNameInArticle: Municipality
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Municipal jurisdiction associated with a record. Construction: Trimmed source label; encoded
+      as a category.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  water_point_name:
+    variableNameInDataset: Water Point Name
+    variableNameInArticle: Emergency Water Point Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Named location where emergency water is distributed. Construction: Trimmed official facility
+      label.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  valid_from_date:
+    variableNameInDataset: Valid From Date
+    variableNameInArticle: Water Point Validity Start Date
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'First calendar date on which the announced operating schedule applies. Construction: Parsed
+      as a calendar date.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  valid_to_date:
+    variableNameInDataset: Valid To Date
+    variableNameInArticle: Water Point Validity End Date
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Last calendar date on which the announced operating schedule applies. Construction: Parsed
+      as a calendar date.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 28
+  opening_time:
+    variableNameInDataset: Opening Time
+    variableNameInArticle: Water Point Opening Time
+    variableAttribute: other
+    variableUnit: local HH:MM
+    variableDescription: 'Daily announced opening time. Construction: Preserved as local `HH:MM` text.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  closing_time:
+    variableNameInDataset: Closing Time
+    variableNameInArticle: Water Point Closing Time
+    variableAttribute: other
+    variableUnit: local HH:MM
+    variableDescription: 'Daily announced closing time. Construction: Preserved as local `HH:MM` text.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  allocation_basis:
+    variableNameInDataset: Allocation Basis
+    variableNameInArticle: Water Allocation Basis
+    variableAttribute: other
+    variableUnit: unitless
+    variableDescription: 'Unit to which the announced allocation limit applies. Construction: Trimmed source label;
+      encoded as a category.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  allocation_limit_l:
+    variableNameInDataset: Allocation Limit (L)
+    variableNameInArticle: Water Allocation Limit in Liters
+    variableAttribute: continuous
+    variableUnit: L/allocation unit
+    variableDescription: '\(q_j^{limit}\), the announced maximum liters distributed per allocation unit at point
+      \(j\). Construction: Parsed as numeric liters; missing values are not imputed.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  water_type:
+    variableNameInDataset: Water Type
+    variableNameInArticle: Distributed Water Type
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Reported type or intended use of distributed water. Construction: Trimmed source label;
+      encoded as a category.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  source_status_time:
+    variableNameInDataset: Source Status Time
+    variableNameInArticle: Water Point Status Timestamp
+    variableAttribute: categorical
+    variableUnit: Asia/Tokyo datetime
+    variableDescription: 'Timestamp at which the announced water-point status applies. Construction: Parsed and
+      normalized to Asia/Tokyo.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  latitude:
+    variableNameInDataset: Latitude
+    variableNameInArticle: Facility Latitude
+    variableAttribute: continuous
+    variableUnit: decimal degrees
+    variableDescription: 'Geographic latitude in decimal degrees. Construction: Retained from an accepted event
+      coordinate or filled by the documented municipality-specific exact-match source hierarchy; otherwise missing.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  longitude:
+    variableNameInDataset: Longitude
+    variableNameInArticle: Facility Longitude
+    variableAttribute: continuous
+    variableUnit: decimal degrees
+    variableDescription: 'Geographic longitude in decimal degrees. Construction: Retained from an accepted event
+      coordinate or filled by the documented municipality-specific exact-match source hierarchy; otherwise missing.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  location_resolution_status:
+    variableNameInDataset: Location Resolution Status
+    variableNameInArticle: Facility Location Resolution Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Indicates whether coordinates were resolved by the accepted deterministic linkage rule.
+      Construction: Distinguishes accepted event coordinates, exact historical matches, unique exact candidate matches,
+      current official designated-shelter matches, current official emergency-evacuation-site matches, announcement-linked
+      support-map matches, and unresolved records; no fuzzy matches are accepted.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  shelter_number:
+    variableNameInDataset: Shelter Number
+    variableNameInArticle: Shelter Sequence Number
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Official sequence number within the shelter status list. Construction: Parsed as a nullable
+      integer.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  shelter_name:
+    variableNameInDataset: Shelter Name
+    variableNameInArticle: Shelter Facility Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Named public shelter facility. Construction: Trimmed official facility label.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  district:
+    variableNameInDataset: District
+    variableNameInArticle: Shelter District
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Local district associated with a shelter. Construction: Trimmed source label; encoded
+      as a category.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  maximum_capacity:
+    variableNameInDataset: Maximum Capacity
+    variableNameInArticle: Maximum Shelter Capacity
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: '\(C_j\), the reported maximum number of people that shelter \(j\) can accommodate. Construction:
+      Parsed as a nullable integer; missing values are not imputed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  evacuee_households:
+    variableNameInDataset: Evacuee Households
+    variableNameInArticle: Evacuee Household Count
+    variableAttribute: count
+    variableUnit: households
+    variableDescription: '\(H_j^{evac}\), households reported at shelter \(j\) at the snapshot time. Construction:
+      Parsed as a nullable integer; missing values are not imputed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  evacuee_people:
+    variableNameInDataset: Evacuee People
+    variableNameInArticle: Evacuee Person Count
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: '\(N_j^{evac}\), people reported at shelter \(j\) at the snapshot time. Construction: Parsed
+      as a nullable integer; missing values are not imputed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  water_status:
+    variableNameInDataset: Water Status
+    variableNameInArticle: Shelter Water Availability Status
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Reported availability of water at a shelter. Construction: Symbols recoded as `available`,
+      `partially available`, or `unavailable`.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  electricity_status:
+    variableNameInDataset: Electricity Status
+    variableNameInArticle: Shelter Electricity Availability Status
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Reported availability of electricity at a shelter. Construction: Symbols recoded as `available`,
+      `partially available`, or `unavailable`.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  air_conditioning_status:
+    variableNameInDataset: Air Conditioning Status
+    variableNameInArticle: Shelter Air Conditioning Availability Status
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Reported availability of air conditioning at a shelter. Construction: Symbols recoded
+      as `available`, `partially available`, or `unavailable`.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  toilet_count:
+    variableNameInDataset: Toilet Count
+    variableNameInArticle: Fixed Toilet Count
+    variableAttribute: count
+    variableUnit: units
+    variableDescription: 'Number of reported fixed toilets at a shelter. Construction: Parsed as a nullable integer;
+      missing values are not imputed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  portable_toilet_count:
+    variableNameInDataset: Portable Toilet Count
+    variableNameInArticle: Portable Toilet Count
+    variableAttribute: count
+    variableUnit: units
+    variableDescription: 'Number of reported portable toilets at a shelter. Construction: Parsed as a nullable integer;
+      missing values are not imputed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  snapshot_time:
+    variableNameInDataset: Snapshot Time
+    variableNameInArticle: Observation Snapshot Timestamp
+    variableAttribute: categorical
+    variableUnit: Asia/Tokyo datetime
+    variableDescription: 'Timestamp identifying the state represented by a shelter or road observation. Construction:
+      Parsed and normalized to Asia/Tokyo.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98884
+  report_number:
+    variableNameInDataset: Report Number
+    variableNameInArticle: MLIT Situation Report Number
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Sequential number of the official situation report. Construction: Parsed as a nullable
+      integer.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 135
+  report_timestamp:
+    variableNameInDataset: report_timestamp
+    variableNameInArticle: Situation Report Timestamp
+    variableAttribute: categorical
+    variableUnit: Asia/Tokyo datetime
+    variableDescription: 'Official issue timestamp of the situation report. Construction: Parsed and normalized
+      to Asia/Tokyo.'
+    variableSource: outage_tanker_snapshots
+    observationNumber: 546
+  water_status_timestamp:
+    variableNameInDataset: Water Status Timestamp
+    variableNameInArticle: Water-System Status Timestamp
+    variableAttribute: categorical
+    variableUnit: Asia/Tokyo datetime
+    variableDescription: 'Timestamp to which the reported water-system conditions refer. Construction: Parsed and
+      normalized to Asia/Tokyo.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 405
+  reporting_unit_type:
+    variableNameInDataset: Reporting Unit Type
+    variableNameInArticle: Reporting Unit Type
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Classification of the reporting entity, such as municipality or joint operator. Construction:
+      Trimmed source label; encoded as a category.'
+    variableSource: derived:reporting_unit_municipality_crosswalk
+    observationNumber: 19
+  reporting_unit:
+    variableNameInDataset: Reporting Unit
+    variableNameInArticle: Reporting Unit Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Named entity for which outage or tanker information is reported. Construction: Trimmed
+      source label; encoded as a category.'
+    variableSource: derived:reporting_unit_municipality_crosswalk
+    observationNumber: 19
+  maximum_outage_households:
+    variableNameInDataset: Maximum Outage Households
+    variableNameInArticle: Maximum Reported Outage Households
+    variableAttribute: other
+    variableUnit: households
+    variableDescription: '\(H_{mt}^{max}\), the maximum reported outage households for unit \(m\) in report \(t\).
+      Construction: Parsed as a nullable integer; report revisions are preserved.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 99
+  current_outage_households:
+    variableNameInDataset: Current Outage Households
+    variableNameInArticle: Current Reported Outage Households
+    variableAttribute: other
+    variableUnit: households
+    variableDescription: '\(H_{mt}^{out}\), households reported without water for unit \(m\) in report \(t\). Construction:
+      Parsed as a nullable integer; missing reports remain missing.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566451
+  outage_period:
+    variableNameInDataset: outage_period_text
+    variableNameInArticle: Reported Outage Period
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Source description of the outage start or duration. Construction: Trimmed text; no unsupported
+      duration is inferred.'
+    variableSource: outage_tanker_snapshots
+    observationNumber: 477
+  damage_status:
+    variableNameInDataset: damage_status_text
+    variableNameInArticle: Water-System Damage Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Source description of water-system damage or restoration conditions. Construction: Trimmed
+      text; retained without automatic classification.'
+    variableSource: outage_tanker_snapshots
+    observationNumber: 389
+  tanker_total:
+    variableNameInDataset: Tanker Total
+    variableNameInArticle: Total Reported Water Tankers
+    variableAttribute: count
+    variableUnit: vehicles
+    variableDescription: '\(V_{mt}\), total tankers reported for unit \(m\) in report \(t\). Construction: Parsed
+      as a nullable integer; unreported values remain missing rather than zero.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 81
+  mlit_tankers:
+    variableNameInDataset: MLIT Tankers
+    variableNameInArticle: Ministry of Land, Infrastructure, Transport and Tourism Tankers
+    variableAttribute: count
+    variableUnit: vehicles
+    variableDescription: '\(V_{mt}^{MLIT}\), tankers attributed to MLIT. Construction: Parsed as a nullable integer;
+      unreported values remain missing rather than zero.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 27
+  jwwa_tankers:
+    variableNameInDataset: JWWA Tankers
+    variableNameInArticle: Japan Water Works Association Tankers
+    variableAttribute: count
+    variableUnit: vehicles
+    variableDescription: '\(V_{mt}^{JWWA}\), tankers attributed to JWWA. Construction: Parsed as a nullable integer;
+      unreported values remain missing rather than zero.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 27
+  sdf_tankers:
+    variableNameInDataset: SDF Tankers
+    variableNameInArticle: Japan Self-Defense Forces Tankers
+    variableAttribute: count
+    variableUnit: vehicles
+    variableDescription: '\(V_{mt}^{SDF}\), tankers attributed to the SDF. Construction: Parsed as a nullable integer;
+      unreported values remain missing rather than zero.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 27
+  prefecture_name:
+    variableNameInDataset: Prefecture Name
+    variableNameInArticle: Prefecture Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Prefecture named in a road-restriction record. Construction: Trimmed source label; encoded
+      as a category.'
+    variableSource: kumamoto_administrative_areas_preprocessed
+    observationNumber: 49
+  municipality_name:
+    variableNameInDataset: Municipality Name
+    variableNameInArticle: Road Restriction Municipality Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Municipality named in a road-restriction record. Construction: Trimmed source label; encoded
+      as a category.'
+    variableSource: kumamoto_administrative_areas_preprocessed
+    observationNumber: 49
+  road_type:
+    variableNameInDataset: 道路種別
+    variableNameInArticle: Road Type
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Administrative or functional road classification. Construction: Trimmed source label;
+      encoded as a category.'
+    variableSource: road_restrictions
+    observationNumber: 641
+  route_name:
+    variableNameInDataset: Route Name
+    variableNameInArticle: Route Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Named or numbered route affected by a restriction. Construction: Trimmed source label.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 71691
+  start_address:
+    variableNameInDataset: 始点住所
+    variableNameInArticle: Restriction Start Address
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Address at the reported start of a restriction. Construction: Trimmed source text.'
+    variableSource: road_restrictions
+    observationNumber: 543
+  end_address:
+    variableNameInDataset: 終点住所
+    variableNameInArticle: Restriction End Address
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Address at the reported end of a restriction. Construction: Trimmed source text.'
+    variableSource: road_restrictions
+    observationNumber: 543
+  restriction_type:
+    variableNameInDataset: 規制種別
+    variableNameInArticle: Road Restriction Type
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Administrative class of road restriction. Construction: Trimmed source label; encoded
+      as a category.'
+    variableSource: road_restrictions
+    observationNumber: 639
+  restriction_reason:
+    variableNameInDataset: Restriction Reason
+    variableNameInArticle: Road Restriction Reason
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Reported cause of a road restriction. Construction: Trimmed source label; encoded as a
+      category.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 71689
+  restriction_start_time:
+    variableNameInDataset: 規制開始_日時
+    variableNameInArticle: Road Restriction Start Timestamp
+    variableAttribute: categorical
+    variableUnit: Asia/Tokyo datetime
+    variableDescription: 'Time at which a restriction reportedly began. Construction: Parsed as local time and assigned
+      Asia/Tokyo.'
+    variableSource: road_restrictions
+    observationNumber: 540
+  restriction_start_status:
+    variableNameInDataset: 規制開始_内容
+    variableNameInArticle: Initial Road Restriction Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Restriction state reported at its start. Construction: Trimmed source label; encoded as
+      a category.'
+    variableSource: road_restrictions
+    observationNumber: 540
+  affected_length_km:
+    variableNameInDataset: 延長_Km
+    variableNameInArticle: Affected Road Length in Kilometers
+    variableAttribute: continuous
+    variableUnit: km
+    variableDescription: '\(L_r^{affected}\), reported affected length of restriction record \(r\). Construction:
+      Parsed as numeric kilometers; missing values are not imputed.'
+    variableSource: road_restrictions
+    observationNumber: 455
+  geometry_json:
+    variableNameInDataset: geometry_json
+    variableNameInArticle: Road Restriction Geometry in JavaScript Object Notation
+    variableAttribute: categorical
+    variableUnit: spatial geometry
+    variableDescription: 'GeoJSON geometry representing the restricted road segment or point. Construction: Retained
+      only when valid JSON with a geometry type.'
+    variableSource: road_restrictions
+    observationNumber: 680
+  start_point_name:
+    variableNameInDataset: 始点
+    variableNameInArticle: Restriction Start Point Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Named start point used in an alternate restriction schema. Construction: Trimmed source
+      text; structural missingness is preserved.'
+    variableSource: road_restrictions
+    observationNumber: 98
+  end_point_name:
+    variableNameInDataset: 終点
+    variableNameInArticle: Restriction End Point Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Named end point used in an alternate restriction schema. Construction: Trimmed source
+      text; structural missingness is preserved.'
+    variableSource: road_restrictions
+    observationNumber: 98
+  restriction_status:
+    variableNameInDataset: Restriction Status
+    variableNameInArticle: Current Road Restriction Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Restriction condition reported in the alternate schema. Construction: Trimmed source label;
+      encoded as a category.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 71689
+  restriction_direction:
+    variableNameInDataset: 規制方向
+    variableNameInArticle: Road Restriction Direction
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Travel direction affected by a restriction. Construction: Trimmed source label; encoded
+      as a category.'
+    variableSource: road_restrictions
+    observationNumber: 74
+  restricted_length_km:
+    variableNameInDataset: 規制延長_Km
+    variableNameInArticle: Restricted Road Length in Kilometers
+    variableAttribute: continuous
+    variableUnit: km
+    variableDescription: '\(L_r^{restricted}\), restricted length reported in the alternate schema. Construction:
+      Parsed as numeric kilometers; missing values are not imputed.'
+    variableSource: road_restrictions
+    observationNumber: 74
+  prefecture_code:
+    variableNameInDataset: 県番号
+    variableNameInArticle: Prefecture Code
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Numeric prefecture identifier when supplied. Construction: Parsed as a nullable integer;
+      structural missingness is preserved.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  restriction_change_time:
+    variableNameInDataset: 規制変更_日時
+    variableNameInArticle: Road Restriction Change Timestamp
+    variableAttribute: categorical
+    variableUnit: Asia/Tokyo datetime
+    variableDescription: 'Time at which a restriction status reportedly changed. Construction: Parsed as local time
+      and assigned Asia/Tokyo.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  restriction_change_status:
+    variableNameInDataset: 規制変更_内容
+    variableNameInArticle: Changed Road Restriction Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Status recorded after a reported restriction change. Construction: Trimmed source label;
+      encoded as a category.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  detour_available:
+    variableNameInDataset: 迂回路_有無
+    variableNameInArticle: Detour Availability Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether a detour is reported as available. Construction: `有` is coded `True`, `無` is coded
+      `False`, and missing remains missing.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  isolated_settlement_present:
+    variableNameInDataset: 孤立集落_有無
+    variableNameInArticle: Isolated Settlement Presence Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether an isolated settlement is reported. Construction: `有` is coded `True`, `無` is
+      coded `False`, and missing remains missing.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  personal_injury_present:
+    variableNameInDataset: 人身_有無
+    variableNameInArticle: Personal Injury Presence Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether personal injury is reported with the restriction. Construction: `有` is coded `True`,
+      `無` is coded `False`, and missing remains missing.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  property_damage_present:
+    variableNameInDataset: 物損_有無
+    variableNameInArticle: Property Damage Presence Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether property damage is reported with the restriction. Construction: `有` is coded `True`,
+      `無` is coded `False`, and missing remains missing.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  power_outage_present:
+    variableNameInDataset: 停電_有無
+    variableNameInArticle: Power Outage Presence Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether a power outage is reported with the restriction. Construction: `有` is coded `True`,
+      `無` is coded `False`, and missing remains missing.'
+    variableSource: road_restrictions
+    observationNumber: 15
+  municipality_code:
+    variableNameInDataset: Municipality Code
+    variableNameInArticle: Municipality Code
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Official code identifying an administrative reporting unit. Construction: Retained as
+      a string so leading zeros remain meaningful.'
+    variableSource: kumamoto_dispatch_base_network_access_preprocessed
+    observationNumber: 81
+  municipality_label:
+    variableNameInDataset: Municipality Label
+    variableNameInArticle: Municipality Reporting Label
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Readable label distinguishing municipalities and retained city wards. Construction: Retained
+      from the administrative layer; no ward dissolve is applied.'
+    variableSource: kumamoto_administrative_areas_preprocessed
+    observationNumber: 49
+  geometry:
+    variableNameInDataset: Geometry
+    variableNameInArticle: Primary Spatial Geometry
+    variableAttribute: categorical
+    variableUnit: spatial geometry
+    variableDescription: 'Polygon, point, or line geometry defining the spatial support of the record. Construction:
+      Preserved as GeoParquet WKB and standardized to EPSG:6668.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98884
+  mesh_code:
+    variableNameInDataset: Mesh Code
+    variableNameInArticle: 125 m Population Mesh Code
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: 'Identifier of the 125 m population cell. Construction: Retained as a string; disclosure
+      metadata remain attached.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  disclosure_group_code:
+    variableNameInDataset: Disclosure Group Code
+    variableNameInArticle: Population Disclosure Group Code
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: 'Identifier of the census disclosure support used for aggregated or suppressed cells. Construction:
+      Retained as a string and used to link mesh and group records.'
+    variableSource: kumamoto_population_group_network_access_preprocessed
+    observationNumber: 36657
+  disclosure_group_size:
+    variableNameInDataset: Disclosure Group Size
+    variableNameInArticle: Disclosure Group Mesh Count
+    variableAttribute: count
+    variableUnit: count
+    variableDescription: 'Number of mesh cells represented by a disclosure group. Construction: Retained as a nullable
+      count; no disaggregation is performed.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  disclosure_status:
+    variableNameInDataset: Disclosure Status
+    variableNameInArticle: Population Disclosure Status
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: 'Indicates whether a mesh is directly reported or represented through an aggregation group.
+      Construction: Retained as a categorical disclosure-control attribute.'
+    variableSource: kumamoto_population_mesh_125m_preprocessed
+    observationNumber: 62945
+  total_population:
+    variableNameInDataset: Total Population
+    variableNameInArticle: Total Resident Population
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: '(N_u), resident population reported for spatial support (u). Construction: Retained at
+      its native mesh or disclosure-group support; no imputation or duplication across supports.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  total_households:
+    variableNameInDataset: Total Households
+    variableNameInArticle: Total Household Count
+    variableAttribute: count
+    variableUnit: households
+    variableDescription: '(H_u), total households reported for spatial support (u). Construction: Retained as a
+      nullable count at native support.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  general_households:
+    variableNameInDataset: General Households
+    variableNameInArticle: General Household Count
+    variableAttribute: count
+    variableUnit: households
+    variableDescription: 'Number of private or general households at spatial support (u). Construction: Retained
+      as a nullable count at native support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  suppressed_source_mesh_count:
+    variableNameInDataset: Suppressed Source Mesh Count
+    variableNameInArticle: Suppressed Source Mesh Count
+    variableAttribute: count
+    variableUnit: count
+    variableDescription: 'Number of suppressed source meshes represented within a disclosure group. Construction:
+      Retained as a nullable count and used to flag aggregation uncertainty.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  population_age_65:
+    variableNameInDataset: Population Age 65+
+    variableNameInArticle: Population Aged 65 Years or Older
+    variableAttribute: count
+    variableUnit: calendar year
+    variableDescription: '(N_u^{65+}), residents aged at least 65 in disclosure group (u). Construction: Retained
+      only at disclosure-group support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  population_age_75:
+    variableNameInDataset: Population Age 75+
+    variableNameInArticle: Population Aged 75 Years or Older
+    variableAttribute: count
+    variableUnit: calendar year
+    variableDescription: '(N_u^{75+}), residents aged at least 75 in disclosure group (u). Construction: Retained
+      only at disclosure-group support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  population_age_85:
+    variableNameInDataset: Population Age 85+
+    variableNameInArticle: Population Aged 85 Years or Older
+    variableAttribute: count
+    variableUnit: calendar year
+    variableDescription: '(N_u^{85+}), residents aged at least 85 in disclosure group (u). Construction: Retained
+      only at disclosure-group support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  one_person_households:
+    variableNameInDataset: One-Person Households
+    variableNameInArticle: One-Person Household Count
+    variableAttribute: count
+    variableUnit: households
+    variableDescription: 'Number of one-person households in disclosure group (u). Construction: Retained as a nullable
+      count at disclosure-group support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  households_with_member_age_65:
+    variableNameInDataset: Households with Member Age 65+
+    variableNameInArticle: Households with a Member Aged 65 or Older
+    variableAttribute: other
+    variableUnit: households
+    variableDescription: 'Number of households containing at least one person aged 65 or older. Construction: Retained
+      as a nullable count at disclosure-group support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  older_single_person_households:
+    variableNameInDataset: Older Single-Person Households
+    variableNameInArticle: Older Single-Person Household Count
+    variableAttribute: count
+    variableUnit: households
+    variableDescription: 'Number of one-person households headed by or consisting of an older resident. Construction:
+      Retained as a nullable count at disclosure-group support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  older_couple_households:
+    variableNameInDataset: Older Couple Households
+    variableNameInArticle: Older Couple Household Count
+    variableAttribute: count
+    variableUnit: households
+    variableDescription: 'Number of older-couple households in disclosure group (u). Construction: Retained as a
+      nullable count at disclosure-group support.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  population_age_65_share:
+    variableNameInDataset: Population Age 65+ Share
+    variableNameInArticle: Share of Population Aged 65 or Older
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: '(N_u^{65+}/N_u) where the denominator is valid. Construction: Retained at disclosure-group
+      support; undefined denominators remain missing.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  population_age_75_share:
+    variableNameInDataset: Population Age 75+ Share
+    variableNameInArticle: Share of Population Aged 75 or Older
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: '(N_u^{75+}/N_u) where the denominator is valid. Construction: Retained at disclosure-group
+      support; undefined denominators remain missing.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  population_age_85_share:
+    variableNameInDataset: Population Age 85+ Share
+    variableNameInArticle: Share of Population Aged 85 or Older
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: '(N_u^{85+}/N_u) where the denominator is valid. Construction: Retained at disclosure-group
+      support; undefined denominators remain missing.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36657
+  older_single_person_household_share:
+    variableNameInDataset: Older Single-Person Household Share
+    variableNameInArticle: Share of Older Single-Person Households
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: 'Older single-person households divided by the applicable household denominator. Construction:
+      Retained at disclosure-group support; undefined denominators remain missing.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36475
+  older_couple_household_share:
+    variableNameInDataset: Older Couple Household Share
+    variableNameInArticle: Share of Older Couple Households
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: 'Older-couple households divided by the applicable household denominator. Construction:
+      Retained at disclosure-group support; undefined denominators remain missing.'
+    variableSource: kumamoto_population_disclosure_groups_preprocessed
+    observationNumber: 36475
+  analysis_unit_id:
+    variableNameInDataset: Analysis Unit ID
+    variableNameInArticle: Network Analysis Unit Identifier
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Identifier linking a population support to its network-access representation. Construction:
+      Retained as a string; unmatched units remain present.'
+    variableSource: kumamoto_population_group_network_access_preprocessed
+    observationNumber: 36657
+  demand_node_id:
+    variableNameInDataset: Demand Node ID
+    variableNameInArticle: Demand-Side Road Network Node Identifier
+    variableAttribute: continuous
+    variableUnit: unitless
+    variableDescription: 'Road-network node assigned to a population analysis unit. Construction: Retained when
+      the accepted snap exists; otherwise missing.'
+    variableSource: kumamoto_population_group_network_access_preprocessed
+    observationNumber: 36650
+  network_snap_distance_m:
+    variableNameInDataset: Network Snap Distance (m)
+    variableNameInArticle: Network Snap Distance in Metres
+    variableAttribute: continuous
+    variableUnit: m
+    variableDescription: 'Euclidean distance from the source support representative point to its assigned road node.
+      Construction: Retained as a nullable float in metres.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  network_snap_accepted:
+    variableNameInDataset: Network Snap Accepted
+    variableNameInArticle: Network Snap Acceptance Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether the source-to-network snap satisfies the preprocessing acceptance rule. Construction:
+      Retained as a nullable Boolean; rejected records are not removed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  access_road_edge_id:
+    variableNameInDataset: Access Road Edge ID
+    variableNameInArticle: Access Road Edge Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Road edge used to connect an analysis unit to the routable network. Construction: Retained
+      as an identifier when a usable snap exists.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  access_edge_fraction:
+    variableNameInDataset: Access Edge Fraction
+    variableNameInArticle: Fractional Position on Access Edge
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: 'Relative position of the access point along its road edge. Construction: Retained as a
+      nullable proportion without clipping.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  representative_mesh_code:
+    variableNameInDataset: Representative Mesh Code
+    variableNameInArticle: Representative Mesh Code for Disclosure Group
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Mesh selected to represent a disclosure group for network access. Construction: Retained
+      as a string; it does not redistribute group demographic totals.'
+    variableSource: kumamoto_population_group_network_access_preprocessed
+    observationNumber: 36657
+  road_edge_id:
+    variableNameInDataset: Road Edge ID
+    variableNameInArticle: Routable Road Edge Identifier
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Unique identifier of a directed or routable road edge. Construction: Retained as a string.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  road_section_id:
+    variableNameInDataset: Road Section ID
+    variableNameInArticle: Source Road Section Identifier
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Identifier of the source road section from which an edge is derived. Construction: Retained
+      as a string.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  from_node_id:
+    variableNameInDataset: From Node ID
+    variableNameInArticle: Road Edge Origin Node Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Origin node of a routable edge. Construction: Retained as a string for graph construction.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  to_node_id:
+    variableNameInDataset: To Node ID
+    variableNameInArticle: Road Edge Destination Node Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Destination node of a routable edge. Construction: Retained as a string for graph construction.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  network_component_id:
+    variableNameInDataset: Network Component ID
+    variableNameInArticle: Road Network Component Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Connected-component identifier of a routable edge. Construction: Retained to diagnose
+      disconnected routing components.'
+    variableSource: kumamoto_routable_road_nodes_preprocessed
+    observationNumber: 314391
+  road_length_m:
+    variableNameInDataset: Road Length (m)
+    variableNameInArticle: Road Edge Length in Metres
+    variableAttribute: continuous
+    variableUnit: m
+    variableDescription: '(l_e), length of road edge (e). Construction: Retained as a nullable float in metres.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  assumed_speed_km_h:
+    variableNameInDataset: Assumed Speed (km/h)
+    variableNameInArticle: Assumed Baseline Road Speed
+    variableAttribute: continuous
+    variableUnit: km/h
+    variableDescription: '(v_e^0), assumed speed for edge (e) under the inherited baseline. Construction: Retained
+      in kilometres per hour; not interpreted as observed post-event speed.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  baseline_edge_travel_time_min:
+    variableNameInDataset: Baseline Edge Travel Time (min)
+    variableNameInArticle: Baseline Road Edge Travel Time
+    variableAttribute: continuous
+    variableUnit: minutes
+    variableDescription: '\(t_e^0=60l_e/(1000v_e^0)\) where inputs are valid. Construction: Retained in minutes
+      as a baseline routing cost.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  hazard_exposure_class:
+    variableNameInDataset: Hazard Exposure Class
+    variableNameInArticle: Road Hazard Exposure Class
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Categorical hazard-exposure classification assigned to a road edge. Construction: Retained
+      as a scenario attribute, not an observed closure state.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  emergency_route_membership:
+    variableNameInDataset: Emergency Route Membership
+    variableNameInArticle: Emergency Transport Route Membership
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Whether an edge belongs to a designated emergency transport route. Construction: Retained
+      as a network-priority attribute.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  road_available:
+    variableNameInDataset: Road Available
+    variableNameInArticle: Baseline Road Availability Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether an edge is enabled in the inherited baseline graph. Construction: Retained as
+      a Boolean baseline; earthquake disruption scenarios may override it.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  network_analysis_eligible:
+    variableNameInDataset: Network Analysis Eligible
+    variableNameInArticle: Network Analysis Eligibility Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether an edge satisfies inherited routing eligibility rules. Construction: Retained
+      as a Boolean without treating it as observed road operability.'
+    variableSource: kumamoto_routable_road_nodes_preprocessed
+    observationNumber: 314391
+  route_id:
+    variableNameInDataset: Route ID
+    variableNameInArticle: Road Route Identifier
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Identifier of the named or numbered route containing an edge. Construction: Retained as
+      a string.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 12991
+  road_category:
+    variableNameInDataset: Road Category
+    variableNameInArticle: Road Functional or Administrative Category
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Source classification of road function or administration. Construction: Retained as a
+      categorical attribute.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  road_state:
+    variableNameInDataset: Road State
+    variableNameInArticle: Road Structural State
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Source code describing the structural state or configuration of a road segment. Construction:
+      Retained as a categorical attribute; not interpreted as 2026 damage.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  vertical_level:
+    variableNameInDataset: Vertical Level
+    variableNameInArticle: Road Vertical-Level Category
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Source code distinguishing surface, elevated, tunnel, or related vertical configurations.
+      Construction: Retained as a categorical topology attribute.'
+    variableSource: kumamoto_routable_road_nodes_preprocessed
+    observationNumber: 314391
+  width_category:
+    variableNameInDataset: Width Category
+    variableNameInArticle: Road Width Category
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Source categorical width class for a road edge. Construction: Retained as a categorical
+      routing attribute.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  toll_category:
+    variableNameInDataset: Toll Category
+    variableNameInArticle: Road Toll Category
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Source indicator or class describing toll status. Construction: Retained as a categorical
+      attribute.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  secondary_mesh_code:
+    variableNameInDataset: Secondary Mesh Code
+    variableNameInArticle: Secondary Mesh Spatial Code
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Secondary mesh code locating a road edge. Construction: Retained as a string.'
+    variableSource: kumamoto_routable_road_edges_preprocessed
+    observationNumber: 390234
+  candidate_staging_site_id:
+    variableNameInDataset: Candidate Staging Site ID
+    variableNameInArticle: Candidate Staging Site Identifier
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Unique identifier of a possible temporary distribution or logistics site. Construction:
+      Retained as a string; prior-study selection scores are excluded.'
+    variableSource: staging_site_candidates
+    observationNumber: 6105
+  candidate_staging_site_type:
+    variableNameInDataset: Candidate Staging Site Type
+    variableNameInArticle: Candidate Staging Site Type
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Facility class of a candidate staging location. Construction: Retained as a categorical
+      attribute for later eligibility rules.'
+    variableSource: staging_site_candidates
+    observationNumber: 6105
+  candidate_staging_site_name:
+    variableNameInDataset: Candidate Staging Site Name
+    variableNameInArticle: Candidate Staging Site Name
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Readable facility or place name of a candidate location. Construction: Trimmed readable
+      name retained from the candidate inventory.'
+    variableSource: staging_site_candidates
+    observationNumber: 6105
+  candidate_source_status:
+    variableNameInDataset: Candidate Source Status
+    variableNameInArticle: Candidate Source Status
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Provenance or availability status assigned by the candidate-source inventory. Construction:
+      Retained as a categorical quality attribute.'
+    variableSource: staging_site_candidates
+    observationNumber: 4790
+  staging_source_priority:
+    variableNameInDataset: Staging Source Priority
+    variableNameInArticle: Staging Source Priority
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Inherited source-priority class used to order candidate evidence. Construction: Retained
+      as an input; it is not the emergency-water optimization priority weight.'
+    variableSource: staging_site_candidates
+    observationNumber: 6105
+  access_mesh_code:
+    variableNameInDataset: Access Mesh Code
+    variableNameInArticle: Candidate Access Mesh Code
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Population mesh associated with a candidate''s network-access representation. Construction:
+      Retained as a string when available.'
+    variableSource: staging_site_candidates
+    observationNumber: 5946
+  staging_demand_node_id:
+    variableNameInDataset: Staging Demand Node ID
+    variableNameInArticle: Candidate Staging Road Network Node Identifier
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Road node assigned to a candidate staging location. Construction: Retained when available;
+      159 unmatched candidates remain with missing nodes.'
+    variableSource: staging_site_candidates
+    observationNumber: 5946
+  staging_access_network_snap_distance_m:
+    variableNameInDataset: Staging Access Network Snap Distance (m)
+    variableNameInArticle: Candidate-to-Network Snap Distance
+    variableAttribute: continuous
+    variableUnit: calendar date
+    variableDescription: 'Distance from a candidate staging site to its assigned road-network node. Construction:
+      Retained as a nullable float in metres.'
+    variableSource: staging_site_candidates
+    observationNumber: 5946
+  staging_to_mesh_distance_m:
+    variableNameInDataset: Staging-to-Mesh Distance (m)
+    variableNameInArticle: Candidate-to-Access-Mesh Distance
+    variableAttribute: continuous
+    variableUnit: calendar date
+    variableDescription: 'Distance from a staging candidate to its associated access mesh. Construction: Retained
+      as a nullable float in metres.'
+    variableSource: staging_site_candidates
+    observationNumber: 5946
+  candidate_network_eligible:
+    variableNameInDataset: Candidate Network Eligible
+    variableNameInArticle: Candidate Network Eligibility Indicator
+    variableAttribute: boolean
+    variableUnit: calendar date
+    variableDescription: 'Whether the candidate satisfies the inherited network-eligibility rule. Construction:
+      Retained as a Boolean input requiring study-specific review.'
+    variableSource: staging_site_candidates
+    observationNumber: 6105
+  screened_staging_candidate:
+    variableNameInDataset: Screened Staging Candidate
+    variableNameInArticle: Screened Staging Candidate Indicator
+    variableAttribute: boolean
+    variableUnit: calendar date
+    variableDescription: 'Whether the location passed the inherited general staging screen. Construction: Retained
+      as a Boolean input, not as a final emergency-water site decision.'
+    variableSource: staging_site_candidates
+    observationNumber: 6105
+  fire_facility_name:
+    variableNameInDataset: Fire Facility Name
+    variableNameInArticle: Fire Facility Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Readable name of a historical fire-service facility. Construction: Retained as a possible
+      dispatch-base label.'
+    variableSource: kumamoto_dispatch_base_network_access_preprocessed
+    observationNumber: 81
+  fire_facility_type_code:
+    variableNameInDataset: Fire Facility Type Code
+    variableNameInArticle: Fire Facility Type Code
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Source code classifying a fire-service facility. Construction: Retained as a categorical
+      code.'
+    variableSource: kumamoto_dispatch_base_network_access_preprocessed
+    observationNumber: 81
+  address:
+    variableNameInDataset: Address
+    variableNameInArticle: Facility Address
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Reported street address of a candidate facility. Construction: Trimmed source text; no
+      missing address is imputed.'
+    variableSource: kumamoto_dispatch_base_network_access_preprocessed
+    observationNumber: 81
+  fire_facility_type:
+    variableNameInDataset: Fire Facility Type
+    variableNameInArticle: Fire Facility Type
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Readable class of a fire-service facility. Construction: Retained as a categorical attribute.'
+    variableSource: kumamoto_dispatch_base_network_access_preprocessed
+    observationNumber: 81
+  candidate_dispatch_base:
+    variableNameInDataset: Candidate Dispatch Base
+    variableNameInArticle: Candidate Dispatch Base Indicator
+    variableAttribute: boolean
+    variableUnit: calendar date
+    variableDescription: 'Whether a historical fire facility is eligible for consideration as a dispatch base. Construction:
+      Retained as a Boolean candidate flag; it does not imply an available tanker fleet.'
+    variableSource: kumamoto_dispatch_base_network_access_preprocessed
+    observationNumber: 81
+  water_utility_operator:
+    variableNameInDataset: P21B_001
+    variableNameInArticle: Historical Water Utility Operator
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Operator named in the historical waterworks record. Construction: CP932 text decoded and
+      whitespace trimmed.'
+    variableSource: P21-12_43_GML.zip::P21-12b_43
+    observationNumber: 153
+  water_service_name:
+    variableNameInDataset: P21B_002
+    variableNameInArticle: Historical Water Service Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Named water service associated with a historical supply area or treatment facility. Construction:
+      CP932 text decoded and whitespace trimmed.'
+    variableSource: P21-12_43_GML.zip::P21-12b_43
+    observationNumber: 153
+  water_service_type_code:
+    variableNameInDataset: P21A_003
+    variableNameInArticle: Historical Water Service Type Code
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Numeric class of the historical water service. Construction: Parsed as a nullable integer.'
+    variableSource: P21-12_43_GML.zip::P21-12a_43
+    observationNumber: 385
+  served_population:
+    variableNameInDataset: P21A_004
+    variableNameInArticle: Historical Served Population
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: 'Population reported as served by a P21 water-supply-area record in 2010. Construction:
+      Parsed as a nullable integer; zero is treated as missing.'
+    variableSource: P21-12_43_GML.zip::P21-12a_43
+    observationNumber: 73
+  maximum_daily_supply_m3_day:
+    variableNameInDataset: P21B_004
+    variableNameInArticle: Historical Maximum Daily Water Supply
+    variableAttribute: continuous
+    variableUnit: m3/day
+    variableDescription: 'Reported historical maximum daily supply in cubic metres per day. Construction: Parsed
+      as a nullable float; zero is treated as missing and values are not treated as 2026 operating capacity.'
+    variableSource: P21-12_43_GML.zip::P21-12b_43
+    observationNumber: 136
+  source_reference_year:
+    variableNameInDataset: __source_reference_year
+    variableNameInArticle: Source Reference Year
+    variableAttribute: categorical
+    variableUnit: calendar year
+    variableDescription: 'Calendar year represented by the historical P21 attributes. Construction: Set to 2010
+      for every P21 record.'
+    variableSource: P21-12_43_GML.zip::P21-12b_43
+    observationNumber: 153
+  dataset_edition_year:
+    variableNameInDataset: __dataset_edition_year
+    variableNameInArticle: Dataset Edition Year
+    variableAttribute: categorical
+    variableUnit: calendar year
+    variableDescription: 'Publication or dataset edition year of the P21 layer. Construction: Set to 2012 for every
+      P21 record.'
+    variableSource: P21-12_43_GML.zip::P21-12b_43
+    observationNumber: 153
+  historical_capacity_only:
+    variableNameInDataset: __historical_capacity_only
+    variableNameInArticle: Historical Capacity Interpretation Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Indicates that population and supply attributes are historical scenario inputs only. Construction:
+      Set to `True` for every P21 record.'
+    variableSource: P21-12_43_GML.zip::P21-12b_43
+    observationNumber: 153
+  water_treatment_facility_name:
+    variableNameInDataset: P21B_003
+    variableNameInArticle: Historical Water Treatment Facility Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Name of a P21 treatment or purification facility. Construction: CP932 text decoded and
+      whitespace trimmed; facility presence and operation in 2026 remain unverified.'
+    variableSource: P21-12_43_GML.zip::P21-12b_43
+    observationNumber: 153
+  network_node_id:
+    variableNameInDataset: Network Node ID
+    variableNameInArticle: Road Network Node Identifier
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Unique identifier of a routable road-network node. Construction: Retained as a string
+      for graph and facility linkage.'
+    variableSource: kumamoto_routable_road_nodes_preprocessed
+    observationNumber: 314391
+  dispatch_base_node_id:
+    variableNameInDataset: Dispatch Base Node ID
+    variableNameInArticle: Dispatch-Base Road Network Node Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Road node linked to a candidate dispatch base. Construction: Retained for an accepted
+      snap; otherwise missing.'
+    variableSource: kumamoto_dispatch_base_network_access_preprocessed
+    observationNumber: 81
+  reporting_prefecture:
+    variableNameInDataset: Reporting Prefecture
+    variableNameInArticle: Reporting Prefecture
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Prefecture associated with a reporting unit. Construction: Standardized readable English
+      name; encoded as a category.'
+    variableSource: derived:reporting_unit_municipality_crosswalk
+    observationNumber: 19
+  reporting_municipality_code:
+    variableNameInDataset: Reporting Municipality Code
+    variableNameInArticle: Reporting Municipality Code
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Code of the 45-unit Kumamoto reporting geography. Construction: Retained as a string;
+      Kumamoto City wards are represented by `43100`.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566451
+  reporting_municipality_name:
+    variableNameInDataset: Reporting Municipality Name
+    variableNameInArticle: Reporting Municipality Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'English name of the matched reporting municipality. Construction: Assigned only through
+      the explicit reporting-unit crosswalk or spatial linkage.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566451
+  municipality_match_status:
+    variableNameInDataset: Municipality Match Status
+    variableNameInArticle: Reporting-Unit Municipality Match Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Outcome of reporting-unit linkage to the study geography. Construction: Coded as exact
+      in-scope, outside scope, joint operator unallocated, or unmatched.'
+    variableSource: derived:reporting_unit_municipality_crosswalk
+    observationNumber: 19
+  in_kumamoto_study_area:
+    variableNameInDataset: In Kumamoto Study Area
+    variableNameInArticle: Kumamoto Study-Area Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether a reporting unit belongs to the Kumamoto study area. Construction: Boolean derived
+      from the explicit crosswalk.'
+    variableSource: derived:reporting_unit_municipality_crosswalk
+    observationNumber: 19
+  joint_operator_area_status:
+    variableNameInDataset: Joint Operator Area Status
+    variableNameInArticle: Joint-Operator Area Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Whether a reporting unit represents a multi-municipality operator. Construction: Boolean;
+      joint operators are retained without unsupported allocation.'
+    variableSource: derived:reporting_unit_municipality_crosswalk
+    observationNumber: 19
+  constituent_administrative_unit_count:
+    variableNameInDataset: Constituent Administrative Unit Count
+    variableNameInArticle: Constituent Administrative Unit Count
+    variableAttribute: count
+    variableUnit: count
+    variableDescription: 'Number of source administrative units dissolved into a reporting municipality. Construction:
+      Equals five for Kumamoto City and one for other reporting municipalities.'
+    variableSource: derived:kumamoto_reporting_municipalities
+    observationNumber: 45
+  kumamoto_city_ward_dissolved:
+    variableNameInDataset: Kumamoto City Ward Dissolved
+    variableNameInArticle: Kumamoto City Ward-Dissolve Indicator
+    variableAttribute: boolean
+    variableUnit: boolean or category
+    variableDescription: 'Whether the reporting polygon combines Kumamoto City wards. Construction: Boolean assigned
+      during creation of the 45-municipality layer.'
+    variableSource: derived:kumamoto_reporting_municipalities
+    observationNumber: 45
+  outage_observation_status:
+    variableNameInDataset: Outage Observation Status
+    variableNameInArticle: Outage Observation Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Availability and interpretation of the outage observation for a municipality. Construction:
+      Distinguishes reported positive, reported zero, assumed zero due to absence from the exhaustive official outage
+      listing, and unmatched geography.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  municipality_total_population:
+    variableNameInDataset: Municipality Total Population
+    variableNameInArticle: Municipality Total Resident Population
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: '\(N_m=\sum_{g\in m}N_g\), resident population assigned to municipality \(m\). Construction:
+      Summed from linked 125 m meshes; unmatched meshes remain separate audit rows.'
+    variableSource: derived:municipality_outage_demand_scenarios
+    observationNumber: 414
+  municipality_total_households:
+    variableNameInDataset: Municipality Total Households
+    variableNameInArticle: Municipality Total Household Count
+    variableAttribute: count
+    variableUnit: households
+    variableDescription: '\(H_m=\sum_{g\in m}H_g\), households assigned to municipality \(m\). Construction: Summed
+      from linked 125 m meshes; missing values are not imputed.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  outage_household_ratio:
+    variableNameInDataset: Outage Household Ratio
+    variableNameInArticle: Current Outage Household Ratio
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: '\(r_m=\min(1,H_m^{out}/H_m)\) when inputs are valid. Construction: Values above one are
+      capped and flagged; municipalities absent from the exhaustive official outage listing receive an assumed ratio
+      of zero, while unmatched geography remains missing.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566451
+  outage_population_scenario:
+    variableNameInDataset: Outage Population Scenario
+    variableNameInArticle: Affected-Population Scenario
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: 'Scenario label identifying lower, central, or upper affected population. Construction:
+      Encoded as an ordered categorical sensitivity level.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  estimated_outage_population:
+    variableNameInDataset: Estimated Outage Population
+    variableNameInArticle: Estimated Population Affected by Outage
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: '\(N_g^{scenario}\), affected residents under the selected planning bound. Construction:
+      Constructed using the documented lower, central, and upper formulas.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566451
+  demand_scenario:
+    variableNameInDataset: Demand Scenario
+    variableNameInArticle: Per-Capita Water-Demand Scenario
+    variableAttribute: continuous
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Scenario label for minimum, basic, or extended daily water demand. Construction: Maps
+      to 3, 10, or 20 L/person/day.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  per_capita_water_demand_l_person_day:
+    variableNameInDataset: Per Capita Water Demand (L/person/day)
+    variableNameInArticle: Per-Capita Emergency Water Demand
+    variableAttribute: continuous
+    variableUnit: L/person/day
+    variableDescription: '\(q\), liters required per person per day under a demand scenario. Construction: Set to
+      3, 10, or 20 for sensitivity analysis.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  estimated_water_demand_l_day:
+    variableNameInDataset: Estimated Water Demand (L/day)
+    variableNameInArticle: Estimated Resident Emergency Water Demand
+    variableAttribute: continuous
+    variableUnit: L/day
+    variableDescription: '\(D_{g,q}=N_g^{scenario}q\), liters per day required by a mesh. Construction: Computed
+      for every estimable population and demand scenario pair.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566451
+  spatial_join_status:
+    variableNameInDataset: Spatial Join Status
+    variableNameInArticle: Population-Mesh Spatial Join Status
+    variableAttribute: count
+    variableUnit: persons
+    variableDescription: 'Method and success state of mesh-to-municipality linkage. Construction: Unique point match,
+      maximum-overlap match, or unmatched.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  municipality_household_share:
+    variableNameInDataset: Municipality Household Share
+    variableNameInArticle: Mesh Share of Municipality Households
+    variableAttribute: continuous
+    variableUnit: proportion
+    variableDescription: '\(H_g/H_m\) when the denominator is valid. Construction: Used to allocate reported outage
+      households to meshes.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566505
+  outage_snapshot_time:
+    variableNameInDataset: Outage Snapshot Time
+    variableNameInArticle: Outage Observation Snapshot Timestamp
+    variableAttribute: categorical
+    variableUnit: Asia/Tokyo datetime
+    variableDescription: 'Timestamp represented by the selected outage report or exhaustive official listing. Construction:
+      Parsed and normalized to Asia/Tokyo; assumed-zero municipalities use the latest exhaustive-listing timestamp
+      and unmatched geography remains missing.'
+    variableSource: derived:population_mesh_outage_demand_scenarios
+    observationNumber: 566451
+  location_resolution_source:
+    variableNameInDataset: Location Resolution Source
+    variableNameInArticle: Facility Location Resolution Source
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Evidence source used to assign a facility geometry. Construction: Accepted event coordinate,
+      exact historical match, unique normalized exact match, current official designated-shelter exact match, current
+      official emergency-evacuation-site exact match, announcement-linked support-map coordinate with provider,
+      or unresolved.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  location_match_candidate_record_count:
+    variableNameInDataset: Location Match Candidate Record Count
+    variableNameInArticle: Facility Location Candidate Record Count
+    variableAttribute: count
+    variableUnit: calendar date
+    variableDescription: 'Number of candidate records returned by deterministic name matching. Construction: Retained
+      as a nullable integer for ambiguity auditing.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  location_match_candidate_geometry_count:
+    variableNameInDataset: Location Match Candidate Geometry Count
+    variableNameInArticle: Facility Location Candidate Geometry Count
+    variableAttribute: count
+    variableUnit: spatial geometry
+    variableDescription: 'Number of unique geometries among deterministic location candidates. Construction: A staging-candidate
+      match is accepted only when this count equals one; announcement-linked coordinate overrides retain the count
+      for ambiguity auditing.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  water_point_node_id:
+    variableNameInDataset: Water Point Node ID
+    variableNameInArticle: Emergency Water-Point Road Network Node Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Road node assigned to an emergency water point. Construction: Retained only for an accepted
+      snap within 250 m.'
+    variableSource: derived:emergency_water_points_network_access
+    observationNumber: 36
+  shelter_node_id:
+    variableNameInDataset: Shelter Node ID
+    variableNameInArticle: Shelter Road Network Node Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Road node assigned to a public shelter. Construction: Retained only for an accepted snap
+      within 250 m.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  estimated_shelter_water_demand_l_day:
+    variableNameInDataset: Estimated Shelter Water Demand (L/day)
+    variableNameInArticle: Estimated Shelter Emergency Water Demand
+    variableAttribute: continuous
+    variableUnit: L/day
+    variableDescription: '\(D_{j,q}^{shelter}=N_j^{evac}q\), shelter demand in liters per day. Construction: Computed
+      separately for 3, 10, and 20 L/person/day when evacuee count is observed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  shelter_demand_accounting_status:
+    variableNameInDataset: Shelter Demand Accounting Status
+    variableNameInArticle: Shelter Demand Accounting Status
+    variableAttribute: continuous
+    variableUnit: count
+    variableDescription: 'Indicates how shelter demand relates to resident demand. Construction: Set to separate
+      accounting; no automatic resident-demand addition is performed.'
+    variableSource: derived:shelter_water_demand_network_access
+    observationNumber: 123
+  restriction_observation_id:
+    variableNameInDataset: Restriction Observation ID
+    variableNameInArticle: Road Restriction Observation Identifier
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Unique identifier of a retained road-restriction observation. Construction: Assigned before
+      edge matching so all 680 observations remain auditable.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98884
+  matched_road_edge_id:
+    variableNameInDataset: Matched Road Edge ID
+    variableNameInArticle: Restriction-Matched Road Edge Identifier
+    variableAttribute: categorical
+    variableUnit: unitless
+    variableDescription: 'Candidate road edge spatially associated with a restriction observation. Construction:
+      One row per candidate edge; missing for unmatched observations.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98808
+  road_edge_match_distance_m:
+    variableNameInDataset: Road Edge Match Distance (m)
+    variableNameInArticle: Restriction-to-Road-Edge Match Distance
+    variableAttribute: continuous
+    variableUnit: m
+    variableDescription: 'Minimum spatial distance between a restriction geometry and candidate edge. Construction:
+      Calculated in metres under the primary or fallback threshold.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98808
+  route_name_agreement:
+    variableNameInDataset: Route Name Agreement
+    variableNameInArticle: Restriction and Road Route-Name Agreement
+    variableAttribute: boolean
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Whether normalized route names agree when both are available. Construction: Auxiliary
+      Boolean; it does not override spatial matching.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 16266
+  road_edge_match_candidate_count:
+    variableNameInDataset: Road Edge Match Candidate Count
+    variableNameInArticle: Road Edge Match Candidate Count
+    variableAttribute: categorical
+    variableUnit: calendar date
+    variableDescription: 'Number of road-edge candidates associated with a restriction observation. Construction:
+      Counted after applying geometry-specific thresholds.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98884
+  road_edge_match_method:
+    variableNameInDataset: Road Edge Match Method
+    variableNameInArticle: Road Edge Match Method
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Spatial rule used to identify the candidate road edge. Construction: Line buffer, point
+      nearest, fallback nearest, or unmatched.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98884
+  road_edge_match_status:
+    variableNameInDataset: Road Edge Match Status
+    variableNameInArticle: Road Edge Match Status
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Whether at least one candidate edge was identified. Construction: Matched or unmatched;
+      it does not imply a road closure.'
+    variableSource: derived:road_restriction_edge_matches
+    observationNumber: 98884
+  parameter_name:
+    variableNameInDataset: Parameter Name
+    variableNameInArticle: Scenario Parameter Name
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Readable name of a planning assumption. Construction: Stored in a long-format scenario
+      table.'
+    variableSource: derived:emergency_water_scenario_parameters
+    observationNumber: 37
+  scenario_level:
+    variableNameInDataset: Scenario Level
+    variableNameInArticle: Scenario Parameter Level
+    variableAttribute: ordinal
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Label identifying a parameter''s sensitivity level or categorical state. Construction:
+      Retained as text for ordering and display.'
+    variableSource: derived:emergency_water_scenario_parameters
+    observationNumber: 37
+  parameter_value:
+    variableNameInDataset: Parameter Value
+    variableNameInArticle: Scenario Parameter Value
+    variableAttribute: categorical
+    variableUnit: unit given by Scenario Parameter Unit
+    variableDescription: 'Numeric or categorical value assigned to a scenario level. Construction: Stored as text
+      to support a common schema.'
+    variableSource: derived:emergency_water_scenario_parameters
+    observationNumber: 37
+  parameter_unit:
+    variableNameInDataset: Parameter Unit
+    variableNameInArticle: Scenario Parameter Unit
+    variableAttribute: categorical
+    variableUnit: declared unit
+    variableDescription: 'Measurement unit associated with a scenario parameter. Construction: Retained as readable
+      text; categorical parameters use a nonnumeric unit label.'
+    variableSource: derived:emergency_water_scenario_parameters
+    observationNumber: 37
+  evidence_class:
+    variableNameInDataset: Evidence Class
+    variableNameInArticle: Scenario Parameter Evidence Class
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Classification of the evidentiary basis for an assumption. Construction: Distinguishes
+      official reference from researcher-defined sensitivity values.'
+    variableSource: derived:emergency_water_scenario_parameters
+    observationNumber: 37
+  evidence_source:
+    variableNameInDataset: Evidence Source
+    variableNameInArticle: Scenario Parameter Evidence Source
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Citation or description supporting a parameter value. Construction: Retained as readable
+      text; researcher-defined values are labeled accordingly.'
+    variableSource: derived:emergency_water_scenario_parameters
+    observationNumber: 37
+  parameter_notes:
+    variableNameInDataset: Parameter Notes
+    variableNameInArticle: Scenario Parameter Notes
+    variableAttribute: categorical
+    variableUnit: text, code, category, or indicator
+    variableDescription: 'Qualification governing the interpretation or use of a parameter. Construction: Retained
+      as text and never used as an unrecorded operational assumption.'
+    variableSource: derived:emergency_water_scenario_parameters
+    observationNumber: 37
+figureDictionary:
+  fig_outage_population_and_emergency_water_demand:
+    figureId: fig_outage_population_and_emergency_water_demand
+    figurePath: data/results/figures/Figure_outage_population_and_emergency_water_demand.png
+    figureCaption: Outage population and emergency water demand across planning bounds
+    figureAim: Maps affected-population estimates and emergency-water demand at mesh and municipality support under
+      the lower, central, and upper planning bounds, addressing the demand component of the research objective.
+    figureExplanation: Shows where affected-population estimates concentrate and converts the central estimate to
+      minimum daily demand. Values are scenario allocations, not household confirmations.
+    figureSuitableSection: 'Results: outage demand'
+  fig_announced_water_points_and_nominal_access_coverage:
+    figureId: fig_announced_water_points_and_nominal_access_coverage
+    figurePath: data/results/figures/Figure_announced_water_points_and_nominal_access_coverage.png
+    figureCaption: Announced water points and nominal resident access coverage
+    figureAim: Maps resolved announced water points, affected demand, and nominal network coverage while explicitly
+      representing unresolved-location sensitivity.
+    figureExplanation: Locates all 36 resolved points and classifies affected meshes by nearest network distance.
+      It does not measure actual walking, queues, or capacity.
+    figureSuitableSection: 'Results: nominal accessibility'
+  fig_accessibility_coverage_by_distance_threshold:
+    figureId: fig_accessibility_coverage_by_distance_threshold
+    figurePath: data/results/figures/Figure_accessibility_coverage_by_distance_threshold.png
+    figureCaption: Network access coverage across five distance thresholds
+    figureAim: Compares cumulative coverage of affected residents, older residents, and shelter evacuees across
+      the approved access-distance thresholds.
+    figureExplanation: Compares cumulative coverage for affected residents, older residents, and shelter evacuees.
+      Thresholds are sensitivity settings rather than observed behavior.
+    figureSuitableSection: 'Results: population accessibility'
+  fig_required_water_volume_and_tanker_workload:
+    figureId: fig_required_water_volume_and_tanker_workload
+    figurePath: data/results/figures/Figure_required_water_volume_and_tanker_workload.png
+    figureCaption: Emergency water volumes and route-constrained tanker workload
+    figureAim: Compares required daily water volume and tanker workload across demand, vehicle-capacity, trip-count,
+      service-time, and work-hour assumptions.
+    figureExplanation: Separates resident and shelter volumes and varies operational assumptions. Results are required
+      capacity, not observed supply deficits.
+    figureSuitableSection: 'Results: capacity requirements'
+  fig_scenario_based_tanker_and_temporary_water_point_allocation:
+    figureId: fig_scenario_based_tanker_and_temporary_water_point_allocation
+    figurePath: data/results/figures/Figure_scenario_based_tanker_and_temporary_water_point_allocation.png
+    figureCaption: Resident tanker allocation across three service catchments
+    figureAim: Maps tanker bases, historical refill candidates, selected temporary water points, fleet gaps, and
+      service areas under matched 500, 1,000, and 2,000 m allocation-catchment scenarios, with road and operational
+      settings held fixed.
+    figureExplanation: Maps capacity-first resident allocations for 500, 1,000, and 2,000 m catchments with ten
+      tankers. The output is an aggregate scenario, not a dispatch-ready schedule.
+    figureSuitableSection: 'Results: resident allocation'
+  fig_marginal_protection_gains_from_additional_tankers:
+    figureId: fig_marginal_protection_gains_from_additional_tankers
+    figurePath: data/results/figures/Figure_marginal_protection_gains_from_additional_tankers.png
+    figureCaption: Marginal protection gains from additional tanker capacity
+    figureAim: Compares remaining unmet minimum water and interval-average protected-population gains as the fleet
+      expands under matched 500, 1,000, and 2,000 m allocation catchments.
+    figureExplanation: Shows unmet minimum water and average marginal protection for three catchments. All twelve
+      nonzero points passed validation and independent reruns.
+    figureSuitableSection: 'Results: marginal returns'
+  fig_announced_water_point_coverage_under_alternative_access_distances:
+    figureId: fig_announced_water_point_coverage_under_alternative_access_distances
+    figurePath: data/results/figures/Figure_announced_water_point_coverage_under_alternative_access_distances.png
+    figureCaption: Existing water-point coverage under alternative access distances
+    figureAim: Maps affected resident meshes covered by the 36 existing announced water points under 250, 500, 1,000,
+      2,000, and 5,000 m baseline road-network distance assumptions.
+    figureExplanation: Maps the same demand and 36 points under five distance thresholds. Spatial expansion reflects
+      only the threshold assumption.
+    figureSuitableSection: 'Results: access sensitivity'
+tableDictionary:
+  table_data_linkage_and_coverage_audit:
+    tableId: table_data_linkage_and_coverage_audit
+    tablePath: data/results/tables/Table_data_linkage_and_coverage_audit.xlsx
+    tableCaption: Coverage audit for reporting, facilities, and network linkages
+    tableAim: Summarizes completeness and uncertainty in reporting-unit, mesh, facility, road, and network linkages.
+    tableExplanation: Audits nine linkage components. All 36 water points and 41 shelters are resolved; unmatched
+      population, staging, and restriction records remain explicit.
+    tableSuitableSection: 'Methods: data quality'
+  table_scenario_parameters_and_evidence:
+    tableId: table_scenario_parameters_and_evidence
+    tablePath: data/results/tables/Table_scenario_parameters_and_evidence.xlsx
+    tableCaption: Scenario parameters, evidence sources, and interpretation limits
+    tableAim: Documents official-reference and researcher-defined sensitivity assumptions used by the planning scenarios.
+    tableExplanation: Documents 37 parameter levels and distinguishes official references from researcher-defined
+      sensitivities.
+    tableSuitableSection: 'Methods: scenario specification'
+  table_municipality_outage_population_and_water_demand:
+    tableId: table_municipality_outage_population_and_water_demand
+    tablePath: data/results/tables/Table_municipality_outage_population_and_water_demand.xlsx
+    tableCaption: Municipality outage population and daily water demand
+    tableAim: Reports outage-population bounds and daily resident water demand for municipalities with a reported
+      positive outage.
+    tableExplanation: Reports the three positive-outage municipalities and their lower, central, and upper population
+      and water-demand scenarios.
+    tableSuitableSection: 'Results: outage demand'
+  table_municipality_accessibility_and_priority_gaps:
+    tableId: table_municipality_accessibility_and_priority_gaps
+    tablePath: data/results/tables/Table_municipality_accessibility_and_priority_gaps.xlsx
+    tableCaption: Municipality accessibility and priority-population gaps
+    tableAim: Reports nominal access coverage and priority gaps for municipalities with a reported positive outage.
+    tableExplanation: Summarizes resident, older-resident, and shelter access indicators across Yatsushiro, Uki,
+      and Hikawa.
+    tableSuitableSection: 'Results: accessibility gaps'
+  table_water_point_capacity_and_tanker_requirements:
+    tableId: table_water_point_capacity_and_tanker_requirements
+    tablePath: data/results/tables/Table_water_point_capacity_and_tanker_requirements.xlsx
+    tableCaption: Water-point volume, trip, and tanker-day requirements
+    tableAim: Reports required water volume, trip count, and pooled tanker-day capacity for announced points receiving
+      positive assigned demand in the 2,000 m allocation diagnostic.
+    tableExplanation: Reports all 36 points under nearest-point demand accounting. Values are capacity requirements,
+      not observed throughput.
+    tableSuitableSection: 'Results: point capacity'
+  table_scenario_based_priority_deployment_list:
+    tableId: table_scenario_based_priority_deployment_list
+    tablePath: data/results/tables/Table_scenario_based_priority_deployment_list.xlsx
+    tableCaption: Priority resident distribution locations under extended allocation
+    tableAim: Ranks the highest-priority selected distribution locations and their supporting historical refill
+      candidates and dispatch bases in the 2,000 m allocation diagnostic; no temporary site is forced when the optimizer
+      selects none.
+    tableExplanation: Lists twenty priority sites from the validated 2,000 m, ten-tanker resident scenario with
+      supporting refill and base records.
+    tableSuitableSection: 'Results: deployment priorities'
+  table_scenario_performance_and_robustness:
+    tableId: table_scenario_performance_and_robustness
+    tablePath: data/results/tables/Table_scenario_performance_and_robustness.xlsx
+    tableCaption: Main allocation performance and targeted stress sensitivity
+    tableAim: Summarizes the main performance level and losses under point failure, matched road restrictions, and
+      combined stress across outage-population, demand, and fleet settings.
+    tableExplanation: Summarizes 27 population, demand, and fleet combinations under point and road stress. It is
+      not exhaustive worst-case optimization.
+    tableSuitableSection: 'Results: robustness'
+  table_full_factorial_scenario_performance_and_robustness_appendix:
+    tableId: table_full_factorial_scenario_performance_and_robustness_appendix
+    tablePath: data/results/tables/Table_full_factorial_scenario_performance_and_robustness_appendix.xlsx
+    tableCaption: Full factorial allocation stress-screen results
+    tableAim: Preserves the complete robustness matrix across outage-population, demand, fleet, road, and point-state
+      combinations for audit and supplementary reporting.
+    tableExplanation: Preserves all 162 combinations for audit, including route infeasibility and negligible discrete
+      packing artifacts.
+    tableSuitableSection: 'Appendix: robustness evidence'
+analysisStructureBrief:
+  overview: A descriptive spatial planning chain links reported outages to bounded resident and separate shelter
+    demand, network access, required capacity, capacity-first resident allocation, marginal tanker returns, and
+    targeted stress screening. Findings are conditional on declared assumptions and do not describe causal effects
+    or realized operations.
+  levels:
+  - levelName: Evidence and linkage audit
+    levelAim: Establish analytical coverage without silent record loss.
+    inputs:
+    - Reporting-Unit Municipality Match Status
+    - Population-Mesh Spatial Join Status
+    - Facility Location Resolution Status
+    - Network Snap Acceptance Indicator
+    - Road Edge Match Status
+    modelOrMethod: Deterministic exact-name and spatial linkage rules retain unmatched denominators; facility and
+      demand connectors are accepted within 250 m.
+    outputs:
+    - Data Linkage and Coverage Audit
+    interpretation: Linkage coverage does not prove operational availability, capacity, staffing, or observed accessibility.
+  - levelName: Resident and shelter demand
+    levelAim: Translate reported outages and evacuees into bounded daily water requirements.
+    inputs:
+    - Current Reported Outage Households
+    - Municipality Total Household Count
+    - Total Resident Population
+    - Per-Capita Emergency Water Demand
+    - Evacuee Person Count
+    modelOrMethod: Resident demand is \(D_{g,s,q}=N_{g,s}^{out}q\) and municipal demand is \(D_{m,s,q}^{resident}=\sum_{g\in\mathcal{G}_m}D_{g,s,q}\).
+      Shelter demand is \(D_{h,q}^{shelter}=N_h^{evac}q\).
+    outputs:
+    - Outage Population and Emergency Water Demand
+    - Municipality Outage Population and Water Demand
+    - Required Water Volume and Tanker Workload
+    interpretation: Population values are planning bounds, not confidence intervals. Shelter and resident demand
+      remain separate.
+  - levelName: Nominal network accessibility
+    levelAim: Measure coverage sensitivity for residents, older residents, and shelter evacuees.
+    inputs:
+    - Estimated Population Affected by Outage
+    - Population Aged 65 Years or Older
+    - Evacuee Person Count
+    - Road Edge Length in Metres
+    modelOrMethod: Shortest distance is \(d_{uj}^{r}=\min_{\pi\in\mathcal{P}_{uj}^{r}}\sum_{e\in\pi}l_e\). Weighted
+      coverage \(C_{x,a,r,o}\) counts population with a nearest eligible point within threshold \(a\).
+    outputs:
+    - Announced Water Points and Nominal Access Coverage
+    - Accessibility Coverage by Distance Threshold
+    - Announced Water-Point Coverage under Alternative Access Distances
+    - Municipality Accessibility and Priority Gaps
+    interpretation: Road-network distance is a proxy; 250 to 5,000 m thresholds are assumptions, not walking standards.
+  - levelName: Tanker workload and required capacity
+    levelAim: Convert point-assigned demand into trips and tanker-day capacity.
+    inputs:
+    - Estimated Resident Emergency Water Demand
+    - Estimated Shelter Emergency Water Demand
+    - Baseline Road Edge Travel Time
+    - Scenario Parameter Value
+    modelOrMethod: Feasible trips are \(K_{bfj}=\min\{K^{limit},\max[0,\lfloor(60W-2t_{bf})/(2t_{fj}+t^{load}+t^{unload})\rfloor]\}\);
+      required tankers are \(n_j^{required}=\lceil Q_j/(cK_{bfj})\rceil\).
+    outputs:
+    - Required Water Volume and Tanker Workload
+    - Water-Point Capacity and Tanker Requirements
+    interpretation: These are required capacities under assumptions; historical refill capacity is not verified
+      2026 capacity.
+  - levelName: Capacity-first resident allocation
+    levelAim: Allocate a pooled fleet and select distribution sites while minimizing unmet resident water.
+    inputs:
+    - Candidate Staging Site Identifier
+    - Candidate Dispatch Base Indicator
+    - Historical Water Treatment Facility Name
+    - Estimated Resident Emergency Water Demand
+    - Fleet Size
+    modelOrMethod: The model uses \(\operatorname{lexmin}(U^{resident},V^{used},K^{trips},Z^{temporary})\) subject
+      to demand balance, access, trip, work-time, and fleet constraints with \(W^{alloc}=10\) hours/day.
+    outputs:
+    - Scenario-Based Tanker and Temporary Water-Point Allocation
+    - Scenario-Based Priority Deployment List
+    interpretation: Only resident demand is optimized. Shelter results remain descriptive, and the plan is not a
+      dispatch-ready schedule.
+  - levelName: Marginal tanker returns
+    levelAim: Measure how unmet water and protection change as fleet size rises.
+    inputs:
+    - Estimated Population Affected by Outage
+    - Estimated Resident Emergency Water Demand
+    - Fleet Size
+    - General Access Distance
+    modelOrMethod: Protected share is \(P_n(\omega)\), unmet water is \(U_n(\omega)=\sum_gU_g\), and marginal gain
+      is \(\Delta P_n(\omega)=P_n(\omega)-P_{n^-}(\omega)\); all nonzero points are validated and independently
+      rerun.
+    outputs:
+    - Marginal Protection Gains from Additional Tankers
+    interpretation: Returns are conditional scenario results and do not establish superiority over unimplemented
+      allocation baselines.
+  - levelName: Stress screening and synthesis
+    levelAim: Test sensitivity and reconcile the demand-access-capacity-allocation-gap chain.
+    inputs:
+    - Affected-Population Scenario
+    - Per-Capita Water-Demand Scenario
+    - Fleet Size
+    - Road Edge Match Status
+    - Scenario Parameter Level
+    modelOrMethod: Screened capacity is \(B_{n,r,o}^{screen}=ncK_{r,o}^{screen}\); deterministic whole-mesh packing
+      is evaluated over 162 population, demand, fleet, road, and point-state combinations.
+    outputs:
+    - Scenario Performance and Robustness
+    - Full-Factorial Scenario Performance and Robustness Appendix
+    - All planned figures and tables
+    interpretation: This is a targeted feasibility screen, not exhaustive worst-case optimization or observed operations;
+      negligible packing artifacts require disclosure.

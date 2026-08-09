@@ -22,6 +22,18 @@ from figure_announced_water_points_and_nominal_access_coverage import (
     build_baseline_graph,
     nearest_water_point_node_distances,
 )
+from _figure_style import (
+    BORDER_GREY,
+    DISTANCE_COLORS,
+    MID_GREY,
+    PURPLE,
+    VERMILLION,
+    BLUE,
+    annotation_box,
+    panel_label,
+    set_theme,
+    style_cartesian_axis,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -51,9 +63,17 @@ OUTPUT_PATH = (
 )
 
 DISTANCE_COLUMN = "Nearest Water Point Network Distance (m)"
-RESIDENT_COLOR = "#087e8b"
-OLDER_COLOR = "#d97706"
-SHELTER_COLOR = "#7b2cbf"
+RESIDENT_COLOR = BLUE
+OLDER_COLOR = VERMILLION
+SHELTER_COLOR = PURPLE
+DISPLAY_THRESHOLDS_M = np.array([250, 500, 1_000, 2_000, 5_000], dtype=float)
+THRESHOLD_COLORS = [
+    DISTANCE_COLORS["<=250 m"],
+    DISTANCE_COLORS["250-500 m"],
+    DISTANCE_COLORS["500-1,000 m"],
+    DISTANCE_COLORS["1,000-2,000 m"],
+    DISTANCE_COLORS["2,000-5,000 m"],
+]
 
 
 def attach_unit_distances(
@@ -143,41 +163,20 @@ def approved_thresholds() -> np.ndarray:
 
 
 def add_panel_label(ax: plt.Axes, label: str) -> None:
-    ax.text(
-        -0.08,
-        1.04,
-        label,
-        transform=ax.transAxes,
-        fontsize=12,
-        fontweight="bold",
-        va="top",
-        ha="left",
-    )
+    panel_label(ax, label, x=-0.08, y=1.04)
 
 
 def add_summary(ax: plt.Axes, text: str) -> None:
-    ax.text(
-        0.03,
-        0.97,
-        text,
-        transform=ax.transAxes,
-        ha="left",
-        va="top",
-        fontsize=8.3,
-        linespacing=1.25,
-        bbox={
-            "boxstyle": "round,pad=0.35",
-            "facecolor": "white",
-            "edgecolor": "#808080",
-            "linewidth": 0.5,
-            "alpha": 0.94,
-        },
+    annotation_box(
+        ax, text, x=0.03, y=0.97, va="top", fontsize=7.8
     )
 
 
 def main() -> None:
-    approved = approved_thresholds()
-    curve_thresholds = np.arange(0.0, approved.max() + 5.0, 5.0)
+    formal_thresholds = approved_thresholds()
+    if not np.isin(formal_thresholds, DISPLAY_THRESHOLDS_M).all():
+        raise ValueError("Formal thresholds are not contained in display thresholds")
+    curve_thresholds = np.arange(0.0, DISPLAY_THRESHOLDS_M.max() + 5.0, 5.0)
 
     water = pd.read_parquet(WATER_POINTS)
     eligible_water = water.loc[
@@ -269,39 +268,43 @@ def main() -> None:
     )
 
     def values_at(curve: np.ndarray) -> np.ndarray:
-        return curve[np.searchsorted(curve_thresholds, approved)]
+        return curve[np.searchsorted(curve_thresholds, DISPLAY_THRESHOLDS_M)]
 
-    resident_approved = values_at(resident_curve)
-    older_approved = values_at(older_curve)
-    shelter_approved = values_at(shelter_curve)
+    resident_display = values_at(resident_curve)
+    older_display = values_at(older_curve)
+    shelter_display = values_at(shelter_curve)
 
-    sns.set_theme(style="whitegrid", context="paper")
-    fig, axes = plt.subplots(1, 3, figsize=(14.8, 4.9), sharex=True, sharey=True)
+    set_theme()
+    fig, axes = plt.subplots(
+        1, 3, figsize=(14.8, 4.9), sharex=True, sharey=True,
+        constrained_layout=True,
+    )
 
     axes[0].plot(
-        curve_thresholds, resident_curve, color=RESIDENT_COLOR, linewidth=2.2
+        curve_thresholds, resident_curve, color=RESIDENT_COLOR, linewidth=2.4
     )
     axes[0].scatter(
-        approved, resident_approved, color=RESIDENT_COLOR, edgecolor="white",
+        DISPLAY_THRESHOLDS_M, resident_display, color=THRESHOLD_COLORS,
+        edgecolor=BORDER_GREY,
         linewidth=0.6, s=35, zorder=4
     )
     add_summary(
         axes[0],
         "Affected residents\n"
-        f"Denominator: {resident_denominator:,.0f}\n"
+        f"Population: {resident_denominator:,.0f}\n"
         f"Network distance defined: {resident_connected:.1%}",
     )
 
-    axes[1].plot(curve_thresholds, older_curve, color=OLDER_COLOR, linewidth=2.2)
+    axes[1].plot(curve_thresholds, older_curve, color=OLDER_COLOR, linewidth=2.4)
     axes[1].scatter(
-        approved, older_approved, color=OLDER_COLOR, edgecolor="white",
+        DISPLAY_THRESHOLDS_M, older_display, color=THRESHOLD_COLORS,
+        edgecolor=BORDER_GREY,
         linewidth=0.6, s=35, zorder=4
     )
     add_summary(
         axes[1],
         "Residents age 65+\n"
-        "In outage-reporting municipalities\n"
-        f"Denominator: {older_denominator:,.0f}\n"
+        f"Population: {older_denominator:,.0f}\n"
         f"Network distance defined: {older_connected:.1%}",
     )
 
@@ -309,33 +312,45 @@ def main() -> None:
         curve_thresholds,
         shelter_curve,
         color=SHELTER_COLOR,
-        linewidth=2.2,
+        linewidth=2.4,
     )
     axes[2].scatter(
-        approved, shelter_approved, color=SHELTER_COLOR, edgecolor="white",
+        DISPLAY_THRESHOLDS_M, shelter_display, color=THRESHOLD_COLORS,
+        edgecolor=BORDER_GREY,
         linewidth=0.6, s=35, zorder=4
     )
     add_summary(
         axes[2],
         "Shelter evacuees\n"
-        f"Reported evacuees: {shelter_denominator:,.0f}\n"
-        "Shelters located: 41/41\n"
+        f"Evacuees: {shelter_denominator:,.0f}\n"
         f"Network distance defined: {shelter_connected:.1%}",
     )
 
-    for label, ax in zip("abc", axes, strict=True):
-        for threshold in approved:
-            ax.axvline(threshold, color="#8d99ae", linewidth=0.7, linestyle=":", zorder=0)
-        ax.set_xlim(0, 1000)
+    for panel_index, (label, ax) in enumerate(zip("abc", axes, strict=True)):
+        guide_linewidth = 1.25 if panel_index < 2 else 0.65
+        guide_alpha = 0.88 if panel_index < 2 else 0.28
+        for threshold, threshold_color in zip(
+            DISPLAY_THRESHOLDS_M, THRESHOLD_COLORS, strict=True
+        ):
+            ax.axvline(
+                threshold,
+                color=threshold_color,
+                linewidth=guide_linewidth,
+                linestyle=(0, (3.0, 2.5)),
+                alpha=guide_alpha,
+                zorder=1,
+            )
+        ax.set_xlim(0, 5100)
         ax.set_ylim(0, 1.02)
-        ax.set_xticks([0, 250, 500, 750, 1000])
+        ax.set_xticks([0, *DISPLAY_THRESHOLDS_M])
+        ax.set_xticklabels(["0", "250", "500", "1,000", "2,000", "5,000"])
+        ax.tick_params(axis="x", labelrotation=30)
+        for tick_label in ax.get_xticklabels():
+            tick_label.set_ha("right")
         ax.yaxis.set_major_formatter(PercentFormatter(1.0))
         ax.set_xlabel("Maximum road-network distance (m)")
-        ax.grid(True, which="major", color="#d6dce2", linewidth=0.65)
-        for spine in ax.spines.values():
-            spine.set_visible(True)
-            spine.set_color("#374151")
-            spine.set_linewidth(0.8)
+        style_cartesian_axis(ax)
+        ax.set_axisbelow(True)
         add_panel_label(ax, label)
     axes[0].set_ylabel("Weighted population covered")
 
@@ -346,26 +361,36 @@ def main() -> None:
     fig.savefig(OUTPUT_PATH, dpi=600, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
-    print(f"Approved thresholds (m): {approved.astype(int).tolist()}")
+    print(f"Formal thresholds (m): {formal_thresholds.astype(int).tolist()}")
+    print(
+        f"Displayed thresholds (m): {DISPLAY_THRESHOLDS_M.astype(int).tolist()} "
+        "(2,000 and 5,000 m are extended diagnostics)"
+    )
     print(
         "Affected-resident coverage: "
         + ", ".join(
             f"{int(threshold)} m={coverage:.6%}"
-            for threshold, coverage in zip(approved, resident_approved, strict=True)
+            for threshold, coverage in zip(
+                DISPLAY_THRESHOLDS_M, resident_display, strict=True
+            )
         )
     )
     print(
         "Older-resident coverage: "
         + ", ".join(
             f"{int(threshold)} m={coverage:.6%}"
-            for threshold, coverage in zip(approved, older_approved, strict=True)
+            for threshold, coverage in zip(
+                DISPLAY_THRESHOLDS_M, older_display, strict=True
+            )
         )
     )
     print(
         "Shelter-evacuee coverage: "
         + ", ".join(
             f"{int(threshold)} m={coverage:.6%}"
-            for threshold, coverage in zip(approved, shelter_approved, strict=True)
+            for threshold, coverage in zip(
+                DISPLAY_THRESHOLDS_M, shelter_display, strict=True
+            )
         )
     )
     print("Shelter locations resolved: 41/41; unknown-location evacuees: 0")

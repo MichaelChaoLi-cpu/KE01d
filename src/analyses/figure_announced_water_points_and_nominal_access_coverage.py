@@ -17,11 +17,25 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
+from matplotlib.patches import FancyBboxPatch, Patch
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import dijkstra
 
 from figure_outage_population_and_emergency_water_demand import style_map
+from _figure_style import (
+    ANNOTATION_GREY,
+    BLACK,
+    BOUNDARY_GREY,
+    DISTANCE_COLORS,
+    GREEN,
+    LIGHT_GREY,
+    PANEL_FILL,
+    PURPLE,
+    YELLOW,
+    annotation_box,
+    panel_label,
+    set_theme,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -47,13 +61,51 @@ OUTPUT_PATH = (
 
 PROJECTED_CRS = 6670
 ACCESS_THRESHOLD_M = 500.0
-ORIGINAL_COLOR = "#087e8b"
-RECOVERED_COLOR = "#d97706"
-COVERED_COLOR = "#2a9d8f"
-GAINED_COLOR = "#f4a261"
-UNCOVERED_COLOR = "#d1495b"
-UNDEFINED_COLOR = "#8d99ae"
-AFFECTED_COLOR = "#fee8a6"
+ORIGINAL_COLOR = BLACK
+RECOVERED_COLOR = PURPLE
+COVERED_COLOR = GREEN
+GAINED_COLOR = YELLOW
+UNCOVERED_COLOR = "#E7C4D7"
+UNDEFINED_COLOR = LIGHT_GREY
+AFFECTED_COLOR = "#F3C892"
+DISTANCE_LABELS = [
+    "<=250 m",
+    "250-500 m",
+    "500-1,000 m",
+    "1,000-2,000 m",
+    "2,000-5,000 m",
+    ">5,000 m or unreachable",
+]
+
+
+def plot_distance_bands(
+    ax: plt.Axes,
+    meshes: gpd.GeoDataFrame,
+    distance_column: str,
+) -> None:
+    """Plot affected meshes in mutually exclusive nearest-point distance bands."""
+    distance = pd.to_numeric(meshes[distance_column], errors="coerce")
+    masks = {
+        "<=250 m": distance.le(250),
+        "250-500 m": distance.gt(250) & distance.le(500),
+        "500-1,000 m": distance.gt(500) & distance.le(1_000),
+        "1,000-2,000 m": distance.gt(1_000) & distance.le(2_000),
+        "2,000-5,000 m": distance.gt(2_000) & distance.le(5_000),
+        ">5,000 m or unreachable": distance.gt(5_000) | distance.isna(),
+    }
+    assigned = pd.Series(False, index=meshes.index)
+    for label in DISTANCE_LABELS:
+        mask = masks[label]
+        assigned |= mask
+        meshes.loc[mask].plot(
+            ax=ax,
+            color=DISTANCE_COLORS[label],
+            edgecolor="none",
+            rasterized=True,
+            zorder=2,
+        )
+    if not assigned.all():
+        raise ValueError(f"Unassigned distance-band meshes for {distance_column}")
 
 
 def build_baseline_graph(
@@ -280,35 +332,84 @@ def load_and_estimate() -> tuple[
 
 
 def add_panel_label(ax: plt.Axes, label: str) -> None:
-    ax.text(
-        -0.03,
-        1.02,
-        label,
-        transform=ax.transAxes,
-        fontsize=12,
-        fontweight="bold",
-        va="top",
-        ha="left",
-    )
+    panel_label(ax, label)
 
 
 def add_summary(ax: plt.Axes, text: str) -> None:
-    ax.text(
-        0.02,
-        0.98,
-        text,
-        transform=ax.transAxes,
-        ha="left",
-        va="top",
-        fontsize=8.5,
-        linespacing=1.25,
-        bbox={
-            "boxstyle": "round,pad=0.35",
-            "facecolor": "white",
-            "edgecolor": "#808080",
-            "linewidth": 0.5,
-            "alpha": 0.94,
-        },
+    annotation_box(ax, text, fontsize=8.1)
+
+
+def draw_legend_panel(ax: plt.Axes) -> None:
+    """Draw one compact legend shared by all three map panels."""
+    ax.set_axis_off()
+    card = ax.inset_axes([0.17, 0.18, 0.66, 0.64])
+    card.set_axis_off()
+    card.add_patch(
+        FancyBboxPatch(
+            (0.02, 0.02),
+            0.96,
+            0.96,
+            boxstyle="round,pad=0.006,rounding_size=0.02",
+            transform=card.transAxes,
+            facecolor=PANEL_FILL,
+            edgecolor=ANNOTATION_GREY,
+            linewidth=0.8,
+        )
+    )
+    card.text(
+        0.08, 0.92, "Legend", transform=card.transAxes,
+        fontsize=9.0, fontweight="bold", va="top",
+    )
+    card.text(
+        0.08, 0.81, "Location evidence", transform=card.transAxes,
+        fontsize=7.1, va="top",
+    )
+    location_legend = card.legend(
+        handles=[
+            Patch(
+                facecolor=AFFECTED_COLOR, edgecolor=ANNOTATION_GREY,
+                label="Affected demand mesh (panel a)",
+            ),
+            Line2D(
+                [0], [0], marker="o", color="none", markerfacecolor=ORIGINAL_COLOR,
+                markeredgecolor="white", markersize=6,
+                label="Previously resolved point",
+            ),
+            Line2D(
+                [0], [0], marker="^", color="none", markerfacecolor=RECOVERED_COLOR,
+                markeredgecolor="white", markersize=7,
+                label="Recovered announcement-linked location",
+            ),
+        ],
+        loc="upper left",
+        bbox_to_anchor=(0.06, 0.77),
+        frameon=False,
+        fontsize=6.5,
+        handlelength=1.4,
+        handletextpad=0.55,
+        labelspacing=0.3,
+    )
+    card.add_artist(location_legend)
+    card.text(
+        0.08, 0.49, "Nearest eligible point distance", transform=card.transAxes,
+        fontsize=7.1, va="top",
+    )
+    card.legend(
+        handles=[
+            Patch(
+                facecolor=DISTANCE_COLORS[label],
+                edgecolor=ANNOTATION_GREY,
+                label=label,
+            )
+            for label in DISTANCE_LABELS
+        ],
+        loc="upper left",
+        bbox_to_anchor=(0.06, 0.455),
+        frameon=False,
+        fontsize=6.3,
+        handlelength=1.4,
+        handletextpad=0.55,
+        labelspacing=0.22,
     )
 
 
@@ -321,7 +422,20 @@ def main() -> None:
         water,
         geographic_bounds,
     ) = load_and_estimate()
-    projected_bounds = tuple(float(value) for value in municipalities.total_bounds)
+    study_municipalities = municipalities.loc[
+        municipalities["Reporting Municipality Name"].isin(
+            ["八代市", "宇城市", "氷川町"]
+        )
+    ].copy()
+    if len(study_municipalities) != 3:
+        raise ValueError("Expected three positive-outage municipalities for map extent")
+    projected_bounds = tuple(
+        float(value) for value in study_municipalities.total_bounds
+    )
+    geographic_bounds = tuple(
+        float(value)
+        for value in study_municipalities.to_crs(6668).total_bounds
+    )
     affected = meshes.loc[meshes["Affected"]].copy()
     original_covered = affected.loc[affected["Original Covered"]]
     gained = affected.loc[affected["Coverage Gained"]]
@@ -357,16 +471,20 @@ def main() -> None:
     if not (0 <= original_share <= complete_share <= 1):
         raise ValueError("Coverage shares are not ordered within [0, 1]")
 
-    sns.set_theme(style="white", context="paper")
-    fig, axes = plt.subplots(1, 3, figsize=(15.5, 6.2), constrained_layout=True)
+    set_theme()
+    fig, axes = plt.subplots(2, 2, figsize=(12.8, 9.2), constrained_layout=True)
+    map_axes = [axes[0, 0], axes[0, 1], axes[1, 0]]
+    key_ax = axes[1, 1]
 
     # Panel a: location-evidence audit after the announcement search.
     affected.plot(
-        ax=axes[0], color=AFFECTED_COLOR, edgecolor="none", rasterized=True, zorder=1
+        ax=map_axes[0], color=AFFECTED_COLOR, edgecolor="none", rasterized=True, zorder=1
     )
-    municipalities.boundary.plot(ax=axes[0], color="#4d4d4d", linewidth=0.35, zorder=3)
+    municipalities.boundary.plot(
+        ax=map_axes[0], color=BOUNDARY_GREY, linewidth=0.35, zorder=3
+    )
     original.plot(
-        ax=axes[0],
+        ax=map_axes[0],
         color=ORIGINAL_COLOR,
         edgecolor="white",
         linewidth=0.45,
@@ -374,7 +492,7 @@ def main() -> None:
         zorder=5,
     )
     recovered.plot(
-        ax=axes[0],
+        ax=map_axes[0],
         color=RECOVERED_COLOR,
         edgecolor="white",
         linewidth=0.6,
@@ -383,111 +501,54 @@ def main() -> None:
         zorder=6,
     )
     add_summary(
-        axes[0],
+        map_axes[0],
         "Announced point locations\n"
         f"Previously resolved: {len(original)}\n"
         f"Recovered from announcements: {len(recovered)}\n"
         f"Complete: {len(original) + len(recovered)}/{len(water)}",
     )
-    axes[0].legend(
-        handles=[
-            Patch(facecolor=AFFECTED_COLOR, edgecolor="#808080", label="Affected demand meshes"),
-            Line2D([0], [0], marker="o", color="none", markerfacecolor=ORIGINAL_COLOR,
-                   markeredgecolor="white", markersize=6, label="Previously resolved point"),
-            Line2D([0], [0], marker="^", color="none", markerfacecolor=RECOVERED_COLOR,
-                   markeredgecolor="white", markersize=7,
-                   label="Recovered announcement-linked location"),
-        ],
-        loc="lower left",
-        bbox_to_anchor=(0.01, 0.01),
-        frameon=True,
-        framealpha=0.94,
-        edgecolor="#808080",
-        fontsize=7.5,
-    )
-
     # Panel b: conservative pre-recovery coverage using the original 17 points.
-    original_uncovered.plot(
-        ax=axes[1], color=UNCOVERED_COLOR, edgecolor="none", rasterized=True, zorder=1
+    plot_distance_bands(
+        map_axes[1], affected, "Nearest Original Point Network Distance (m)"
     )
-    original_undefined.plot(
-        ax=axes[1], color=UNDEFINED_COLOR, edgecolor="none", rasterized=True, zorder=2
+    municipalities.boundary.plot(
+        ax=map_axes[1], color=BOUNDARY_GREY, linewidth=0.35, zorder=4
     )
-    original_covered.plot(
-        ax=axes[1], color=COVERED_COLOR, edgecolor="none", rasterized=True, zorder=3
-    )
-    municipalities.boundary.plot(ax=axes[1], color="#4d4d4d", linewidth=0.35, zorder=4)
     original.plot(
-        ax=axes[1], color=ORIGINAL_COLOR, edgecolor="white", linewidth=0.4,
+        ax=map_axes[1], color=ORIGINAL_COLOR, edgecolor="white", linewidth=0.4,
         markersize=18, zorder=5
     )
     add_summary(
-        axes[1],
+        map_axes[1],
         "Before location recovery (17 points)\n"
         f"Threshold: {ACCESS_THRESHOLD_M:,.0f} m\n"
         f"Covered: {original_covered_population:,.0f} people ({original_share:.1%})",
     )
-    axes[1].legend(
-        handles=[
-            Patch(facecolor=COVERED_COLOR, edgecolor="#808080", label="Covered within 500 m"),
-            Patch(facecolor=UNCOVERED_COLOR, edgecolor="#808080", label="Beyond 500 m"),
-            Patch(facecolor=UNDEFINED_COLOR, edgecolor="#808080", label="Network distance undefined"),
-        ],
-        loc="lower left",
-        bbox_to_anchor=(0.01, 0.01),
-        frameon=True,
-        framealpha=0.94,
-        edgecolor="#808080",
-        fontsize=7.5,
-    )
-
     # Panel c: complete-location coverage after recovering all 19 points.
-    complete_uncovered.plot(
-        ax=axes[2], color=UNCOVERED_COLOR, edgecolor="none", rasterized=True, zorder=1
+    plot_distance_bands(
+        map_axes[2], affected, "Nearest Complete Point Network Distance (m)"
     )
-    complete_undefined.plot(
-        ax=axes[2], color=UNDEFINED_COLOR, edgecolor="none", rasterized=True, zorder=2
+    municipalities.boundary.plot(
+        ax=map_axes[2], color=BOUNDARY_GREY, linewidth=0.35, zorder=5
     )
-    gained.plot(
-        ax=axes[2], color=GAINED_COLOR, edgecolor="none", rasterized=True, zorder=3
-    )
-    original_covered.plot(
-        ax=axes[2], color=COVERED_COLOR, edgecolor="none", rasterized=True, zorder=4
-    )
-    municipalities.boundary.plot(ax=axes[2], color="#4d4d4d", linewidth=0.35, zorder=5)
     original.plot(
-        ax=axes[2], color=ORIGINAL_COLOR, edgecolor="white", linewidth=0.4,
+        ax=map_axes[2], color=ORIGINAL_COLOR, edgecolor="white", linewidth=0.4,
         markersize=18, zorder=6
     )
     recovered.plot(
-        ax=axes[2], color=RECOVERED_COLOR, edgecolor="white", linewidth=0.4,
+        ax=map_axes[2], color=RECOVERED_COLOR, edgecolor="white", linewidth=0.4,
         marker="^", markersize=22, zorder=7
     )
     add_summary(
-        axes[2],
+        map_axes[2],
         "After location recovery (36 points)\n"
         f"Covered: {complete_covered_population:,.0f} people ({complete_share:.1%})\n"
         f"Gain: +{gained_population:,.0f} people (+{complete_share - original_share:.1%})",
     )
-    axes[2].legend(
-        handles=[
-            Patch(facecolor=COVERED_COLOR, edgecolor="#808080", label="Covered by original 17 points"),
-            Patch(facecolor=GAINED_COLOR, edgecolor="#808080",
-                  label="Coverage gained from recovered points"),
-            Patch(facecolor=UNCOVERED_COLOR, edgecolor="#808080", label="Still beyond 500 m"),
-            Patch(facecolor=UNDEFINED_COLOR, edgecolor="#808080", label="Network distance undefined"),
-        ],
-        loc="lower left",
-        bbox_to_anchor=(0.01, 0.01),
-        frameon=True,
-        framealpha=0.94,
-        edgecolor="#808080",
-        fontsize=7.2,
-    )
-
-    for label, ax in zip("abc", axes, strict=True):
+    for label, ax in zip("abc", map_axes, strict=True):
         style_map(ax, projected_bounds, geographic_bounds)
         add_panel_label(ax, label)
+    draw_legend_panel(key_ax)
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUTPUT_PATH, dpi=600, bbox_inches="tight", facecolor="white")

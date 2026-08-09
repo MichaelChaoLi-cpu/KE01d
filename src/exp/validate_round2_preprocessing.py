@@ -25,7 +25,7 @@ EXPECTED = {
     "emergency_water_points_network_access_preprocessed.parquet": (36, 22),
     "shelter_water_demand_network_access_preprocessed.parquet": (123, 29),
     "road_restriction_edge_matches_preprocessed.parquet": (98_884, 12),
-    "emergency_water_scenario_parameters_preprocessed.parquet": (35, 7),
+    "emergency_water_scenario_parameters_preprocessed.parquet": (37, 7),
 }
 GEO_FILES = set(EXPECTED) - {
     "reporting_unit_municipality_crosswalk_preprocessed.parquet",
@@ -142,7 +142,7 @@ def main() -> None:
     parameters = pd.read_parquet(ROOT / "data/processed/emergency_water_scenario_parameters_preprocessed.parquet")
     parameter_type = pq.read_schema(ROOT / "data/processed/emergency_water_scenario_parameters_preprocessed.parquet").field("Parameter Value").type
     parameter_is_string = pa.types.is_string(parameter_type) or pa.types.is_large_string(parameter_type)
-    check(parameter_is_string and parameters["Parameter Name"].nunique() == 12, "parameter_long_format", {"parameters": parameters["Parameter Name"].nunique(), "arrow_type": str(parameter_type)}, checks, failures)
+    check(parameter_is_string and parameters["Parameter Name"].nunique() == 13, "parameter_long_format", {"parameters": parameters["Parameter Name"].nunique(), "arrow_type": str(parameter_type)}, checks, failures)
 
     manifest_rows = []
     for source_text, output_text in SOURCES.items():

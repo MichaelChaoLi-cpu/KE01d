@@ -18,10 +18,25 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.cm import ScalarMappable
-from matplotlib.colors import PowerNorm
+from matplotlib.colors import LinearSegmentedColormap, PowerNorm
+from matplotlib.patches import FancyBboxPatch
 from matplotlib.patches import Patch
 from pyproj import Transformer
 from shapely.geometry import LineString
+
+from _figure_style import (
+    ANNOTATION_GREY,
+    BLACK,
+    BLUE,
+    BOUNDARY_GREY,
+    GREEN,
+    LIGHT_GREY,
+    PANEL_FILL,
+    YELLOW,
+    annotation_box,
+    panel_label,
+    set_theme,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -201,7 +216,7 @@ def add_panel(
     )
 
     scenario.loc[assumed_zero].plot(
-        ax=ax, color="#eeeeee", edgecolor="none", rasterized=True
+        ax=ax, color=LIGHT_GREY, edgecolor="none", rasterized=True
     )
     scenario.loc[reported_zero].plot(
         ax=ax, color="#ffffff", edgecolor="none", rasterized=True
@@ -214,31 +229,19 @@ def add_panel(
         edgecolor="none",
         rasterized=True,
     )
-    municipalities.boundary.plot(ax=ax, color="#4d4d4d", linewidth=0.35)
+    municipalities.boundary.plot(ax=ax, color=BOUNDARY_GREY, linewidth=0.35)
 
     population = float(scenario.loc[known, POPULATION_COLUMN].sum())
     demand = float(scenario.loc[known, DEMAND_COLUMN].sum())
     unknown = int((~known).sum())
-    ax.text(
-        0.02,
-        0.98,
+    annotation_box(
+        ax,
         (
             f"{label}\n"
             f"Affected population: {population:,.0f}\n"
             f"Minimum demand: {demand / 1_000:,.1f} m3/day"
         ),
-        transform=ax.transAxes,
-        ha="left",
-        va="top",
-        fontsize=8.5,
-        linespacing=1.25,
-        bbox={
-            "boxstyle": "round,pad=0.35",
-            "facecolor": "white",
-            "edgecolor": "#808080",
-            "linewidth": 0.5,
-            "alpha": 0.92,
-        },
+        fontsize=8.2,
     )
     style_map(ax, projected_bounds, geographic_bounds)
     return {
@@ -258,14 +261,18 @@ def main() -> None:
     if positive_values.empty:
         raise ValueError("No positive minimum-demand values are available to map.")
 
-    cmap = "YlGnBu"
+    cmap = LinearSegmentedColormap.from_list(
+        "ke01d_water_demand", [YELLOW, GREEN, BLUE, BLACK]
+    )
     norm = PowerNorm(gamma=0.5, vmin=0, vmax=float(positive_values.max()))
-    sns.set_theme(style="white", context="paper")
-    fig, axes = plt.subplots(1, 3, figsize=(15.5, 6.2), constrained_layout=True)
+    set_theme()
+    fig, axes = plt.subplots(2, 2, figsize=(12.8, 9.2), constrained_layout=True)
+    map_axes = [axes[0, 0], axes[0, 1], axes[1, 0]]
+    key_ax = axes[1, 1]
 
     summaries: list[dict[str, float | int | str]] = []
-    for panel_label, ax, (scenario_value, display_label) in zip(
-        "abc", axes, SCENARIOS, strict=True
+    for letter, ax, (scenario_value, display_label) in zip(
+        "abc", map_axes, SCENARIOS, strict=True
     ):
         scenario = meshes.loc[meshes[SCENARIO_COLUMN].eq(scenario_value)]
         if scenario.empty:
@@ -282,48 +289,59 @@ def main() -> None:
                 geographic_bounds,
             )
         )
-        ax.text(
-            -0.03,
-            1.02,
-            panel_label,
-            transform=ax.transAxes,
-            fontsize=12,
-            fontweight="bold",
-            va="top",
-            ha="left",
-        )
+        panel_label(ax, letter)
 
+    key_ax.set_axis_off()
+    card_ax = key_ax.inset_axes([0.19, 0.305, 0.62, 0.39])
+    card_ax.set_axis_off()
+    card_ax.add_patch(
+        FancyBboxPatch(
+            (0.02, 0.02), 0.96, 0.96,
+            boxstyle="round,pad=0.006,rounding_size=0.02",
+            transform=card_ax.transAxes,
+            facecolor=PANEL_FILL,
+            edgecolor=ANNOTATION_GREY,
+            linewidth=0.8,
+        )
+    )
+    card_ax.text(
+        0.07, 0.88, "Legend", transform=card_ax.transAxes,
+        fontsize=9.3, fontweight="bold", va="top", color=BLACK,
+    )
+    card_ax.text(
+        0.07, 0.69, "Minimum emergency water demand",
+        transform=card_ax.transAxes, fontsize=7.3, va="top", color=BLACK,
+    )
+    colorbar_ax = card_ax.inset_axes([0.07, 0.49, 0.84, 0.085])
     colorbar = fig.colorbar(
-        ScalarMappable(norm=norm, cmap=cmap),
-        ax=axes,
-        orientation="horizontal",
-        fraction=0.04,
-        pad=0.025,
-        aspect=45,
+        ScalarMappable(norm=norm, cmap=cmap), cax=colorbar_ax, orientation="horizontal"
     )
     colorbar.set_label(
-        "Minimum emergency water demand (L/day per 125 m mesh; square-root color scale)"
+        "L/day per 125 m mesh (square-root scale)", fontsize=6.6, labelpad=1
     )
+    colorbar.set_ticks([0, 200, 400, 600])
+    colorbar.ax.tick_params(labelsize=6.5, pad=1)
     legend_handles = [
         Patch(
             facecolor="#ffffff",
-            edgecolor="#808080",
+            edgecolor=ANNOTATION_GREY,
             label="Zero demand (officially reported zero)",
         ),
         Patch(
-            facecolor="#eeeeee",
-            edgecolor="#808080",
+            facecolor=LIGHT_GREY,
+            edgecolor=ANNOTATION_GREY,
             label="Zero demand (absent from official outage listing)",
         ),
     ]
-    axes[0].legend(
+    card_ax.legend(
         handles=legend_handles,
-        loc="lower left",
-        bbox_to_anchor=(0.01, 0.01),
-        frameon=True,
-        framealpha=0.92,
-        edgecolor="#808080",
-        fontsize=8,
+        loc="upper left",
+        bbox_to_anchor=(0.052, 0.27),
+        frameon=False,
+        fontsize=6.6,
+        handlelength=1.5,
+        handletextpad=0.55,
+        labelspacing=0.3,
     )
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
