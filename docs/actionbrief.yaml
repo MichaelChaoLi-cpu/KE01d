@@ -1945,6 +1945,12 @@ figureDictionary:
       the lower, central, and upper planning bounds, addressing the demand component of the research objective.
     figureExplanation: Shows where affected-population estimates concentrate and converts the central estimate to
       minimum daily demand. Values are scenario allocations, not household confirmations.
+    figurePanelCount: 3
+    figureNote: Panels a, b, and c map minimum emergency-water demand at 125 m mesh support under the lower, central,
+      and upper outage-population bounds, respectively. Each panel reports its affected-population estimate and minimum
+      daily demand. All panels use the same square-root color scale and distinguish officially reported zero demand
+      from municipalities absent from the outage listing. Values are scenario estimates rather than household-level
+      outage observations.
     figureSuitableSection: 'Results: outage demand'
   fig_announced_water_points_and_nominal_access_coverage:
     figureId: fig_announced_water_points_and_nominal_access_coverage
@@ -1954,6 +1960,12 @@ figureDictionary:
       representing unresolved-location sensitivity.
     figureExplanation: Locates all 36 resolved points and classifies affected meshes by nearest network distance.
       It does not measure actual walking, queues, or capacity.
+    figurePanelCount: 3
+    figureNote: Panel a distinguishes 17 previously resolved points from 19 locations recovered from announcements,
+      completing the 36-point inventory. Panel b shows 500 m nominal coverage before location recovery, with 4,685
+      residents covered by 17 points. Panel c applies the same threshold after recovery, with 9,380 residents covered
+      by 36 points. The distance classes are road-network proxies and do not represent observed walking, queues, or
+      point capacity.
     figureSuitableSection: 'Results: nominal accessibility'
   fig_accessibility_coverage_by_distance_threshold:
     figureId: fig_accessibility_coverage_by_distance_threshold
@@ -1963,6 +1975,12 @@ figureDictionary:
       the approved access-distance thresholds.
     figureExplanation: Compares cumulative coverage for affected residents, older residents, and shelter evacuees.
       Thresholds are sensitivity settings rather than observed behavior.
+    figurePanelCount: 3
+    figureNote: Panel a presents cumulative network-distance coverage for 93,490 affected residents, panel b presents
+      the corresponding curve for 66,353 residents aged 65 or older, and panel c presents coverage for 2,248 shelter
+      evacuees. Colored markers identify the 250, 500, 1,000, 2,000, and 5,000 m settings. The curves use population
+      weights appropriate to each group and treat the thresholds as sensitivity assumptions rather than observations
+      of collection behavior.
     figureSuitableSection: 'Results: population accessibility'
   fig_required_water_volume_and_tanker_workload:
     figureId: fig_required_water_volume_and_tanker_workload
@@ -1972,6 +1990,12 @@ figureDictionary:
       service-time, and work-hour assumptions.
     figureExplanation: Separates resident and shelter volumes and varies operational assumptions. Results are required
       capacity, not observed supply deficits.
+    figurePanelCount: 3
+    figureNote: Panel a reports resident water requirements for lower, central, and upper outage-population bounds and
+      the separate shelter ledger under 3, 10, and 20 L/person/day. Panel b reports median feasible trips per tanker
+      across daily work limits and combined loading and unloading times, with route ranges in brackets. Panel c reports
+      equivalent resident and shelter vehicles across tanker capacities and trip limits under the stated central-demand
+      assumptions. All values are planning requirements rather than observed availability or deliveries.
     figureSuitableSection: 'Results: capacity requirements'
   fig_scenario_based_tanker_and_temporary_water_point_allocation:
     figureId: fig_scenario_based_tanker_and_temporary_water_point_allocation
@@ -1982,6 +2006,13 @@ figureDictionary:
       settings held fixed.
     figureExplanation: Maps capacity-first resident allocations for 500, 1,000, and 2,000 m catchments with ten
       tankers. The output is an aggregate scenario, not a dispatch-ready schedule.
+    figurePanelCount: 3
+    figureNote: Panels a, b, and c show capacity-first resident allocation under 500, 1,000, and 2,000 m service
+      catchments, respectively, with central minimum demand, ten tankers, reported points, and baseline roads held
+      fixed. Panel a is access constrained, panel b shows the transition toward pooled-fleet limits, and panel c is an
+      extended capacity-constrained diagnostic. Symbols identify selected announced or temporary points, historical
+      refill candidates, and supporting dispatch bases. The 2,000 m catchment is not a walking standard, and none of
+      the panels is a dispatch-ready vehicle schedule.
     figureSuitableSection: 'Results: resident allocation'
   fig_marginal_protection_gains_from_additional_tankers:
     figureId: fig_marginal_protection_gains_from_additional_tankers
@@ -1991,6 +2022,12 @@ figureDictionary:
       expands under matched 500, 1,000, and 2,000 m allocation catchments.
     figureExplanation: Shows unmet minimum water and average marginal protection for three catchments. All twelve
       nonzero points passed validation and independent reruns.
+    figurePanelCount: 2
+    figureNote: Panel a reports remaining unmet minimum water as available fleet size increases across 500, 1,000,
+      and 2,000 m allocation catchments. Panel b reports the average marginal protected-population gain per added
+      vehicle over each preceding fleet interval. Both panels hold the central affected population, 3 L/person/day,
+      reported water-point state, and no modeled road closures fixed. The 2,000 m curve is an extended allocation
+      diagnostic rather than a walking standard.
     figureSuitableSection: 'Results: marginal returns'
   fig_announced_water_point_coverage_under_alternative_access_distances:
     figureId: fig_announced_water_point_coverage_under_alternative_access_distances
@@ -2000,6 +2037,12 @@ figureDictionary:
       2,000, and 5,000 m baseline road-network distance assumptions.
     figureExplanation: Maps the same demand and 36 points under five distance thresholds. Spatial expansion reflects
       only the threshold assumption.
+    figurePanelCount: 5
+    figureNote: Panels a through e map affected resident meshes covered by the same 36 announced water points within
+      250, 500, 1,000, 2,000, and 5,000 m road-network distances, respectively. Every panel uses the same resident
+      denominator, water-point inventory, road state, and distance calculation and distinguishes covered, uncovered,
+      and undefined-distance meshes. The spatial expansion therefore reflects only the threshold assumption; the five
+      distances are not observations of actual walking behavior or point capacity.
     figureSuitableSection: 'Results: access sensitivity'
 tableDictionary:
   table_data_linkage_and_coverage_audit:

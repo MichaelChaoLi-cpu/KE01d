@@ -270,7 +270,7 @@ def write_workbook(table_data: pd.DataFrame) -> None:
     sheet.title = SHEET_NAME
     sheet.sheet_view.showGridLines = False
 
-    sheet.merge_cells("A1:H1")
+    # Preserve the title in row 1 without merged cells for deterministic DOCX export.
     sheet["A1"] = TITLE
     sheet["A1"].font = Font(name="Aptos Display", size=18, bold=True, color=WHITE)
     sheet["A1"].fill = PatternFill("solid", fgColor=NAVY)
@@ -433,6 +433,7 @@ def verify_outputs(row_count: int) -> None:
     sheet = workbook[SHEET_NAME]
     assert sheet.max_row == row_count + 2 and sheet.max_column == 8
     assert sheet["A1"].value == TITLE
+    assert not sheet.merged_cells.ranges
     assert sheet["A2"].value == HEADERS[0]
     assert sheet["H2"].value == HEADERS[-1]
     assert sum(

@@ -108,7 +108,8 @@ def write_workbook(data: pd.DataFrame) -> None:
     sheet.title = SHEET_NAME
     sheet.sheet_view.showGridLines = False
 
-    sheet.merge_cells("A1:G1")
+    # Keep the requested title in row 1 and the column labels in row 2 without
+    # merging cells, so deterministic Word export can preserve all columns.
     title_cell = sheet["A1"]
     title_cell.value = TITLE
     title_cell.font = Font(name="Aptos Display", size=18, bold=True, color=WHITE)
@@ -295,6 +296,7 @@ def verify_workbook() -> None:
     assert sheet.max_row == 39
     assert sheet.max_column == 7
     assert sheet["A1"].value == TITLE
+    assert not sheet.merged_cells.ranges
     assert sheet["A2"].value == HEADERS[0]
     assert sheet["G2"].value == HEADERS[-1]
     assert sum(1 for row in sheet.iter_rows(min_row=3, max_row=39) if row[0].value) == 37

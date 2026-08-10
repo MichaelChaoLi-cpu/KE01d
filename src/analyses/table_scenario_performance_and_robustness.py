@@ -559,7 +559,7 @@ def write_appendix_workbook(
     sheet = workbook.active
     sheet.title = APPENDIX_SHEET_NAME
     sheet.sheet_view.showGridLines = False
-    sheet.merge_cells("A1:J1")
+    # Preserve the title in row 1 without merged cells for deterministic DOCX export.
     sheet["A1"] = APPENDIX_TITLE
     sheet["A1"].font = Font(name="Aptos Display", size=18, bold=True, color=WHITE)
     sheet["A1"].fill = PatternFill("solid", fgColor=NAVY)
@@ -656,7 +656,7 @@ def write_main_workbook(table_data: pd.DataFrame) -> None:
     sheet = workbook.active
     sheet.title = SHEET_NAME
     sheet.sheet_view.showGridLines = False
-    sheet.merge_cells("A1:I1")
+    # Preserve the title in row 1 without merged cells for deterministic DOCX export.
     sheet["A1"] = TITLE
     sheet["A1"].font = Font(name="Aptos Display", size=18, bold=True, color=WHITE)
     sheet["A1"].fill = PatternFill("solid", fgColor=NAVY)
@@ -924,6 +924,7 @@ def verify_main_outputs(row_count: int) -> None:
     sheet = workbook[SHEET_NAME]
     assert sheet.max_row == row_count + 2 and sheet.max_column == len(MAIN_HEADERS)
     assert sheet["A1"].value == TITLE
+    assert not sheet.merged_cells.ranges
     assert sheet["A2"].value == MAIN_HEADERS[0]
     assert sheet["I2"].value == MAIN_HEADERS[-1]
     japanese_cells: list[str] = []
@@ -942,6 +943,7 @@ def verify_appendix_outputs(row_count: int) -> None:
     sheet = workbook[APPENDIX_SHEET_NAME]
     assert sheet.max_row == row_count + 2 and sheet.max_column == len(HEADERS)
     assert sheet["A1"].value == APPENDIX_TITLE
+    assert not sheet.merged_cells.ranges
     assert sheet["A2"].value == HEADERS[0]
     assert sheet["J2"].value == HEADERS[-1]
     japanese_cells: list[str] = []
